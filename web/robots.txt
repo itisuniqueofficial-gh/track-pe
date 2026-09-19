@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://track-pe.itisuniqueofficial.com/sitemap.xml
