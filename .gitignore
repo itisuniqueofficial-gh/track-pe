@@ -36,6 +36,22 @@ migrate_working_dir/
 # Symbolication related
 app.*.symbols
 
+# Secrets & signing material — never commit these
+*.jks
+*.keystore
+**/*.jks
+**/*.keystore
+key.properties
+android/key.properties
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.p8
+service-account*.json
+secrets/
+
 # Obfuscation related
 app.*.map.json
 
@@ -43,3 +59,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Android signing credentials
+android/key.properties
+*.jks
+*.keystore

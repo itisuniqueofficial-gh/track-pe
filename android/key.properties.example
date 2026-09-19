@@ -1,0 +1,13 @@
+# Copy this file to android/key.properties and fill in your real values.
+# android/key.properties is git-ignored and must NEVER be committed.
+#
+# Generate a keystore locally with:
+#   keytool -genkey -v -keystore trackpe-release.jks \
+#     -keyalg RSA -keysize 2048 -validity 10000 -alias trackpe
+#
+# In CI, this file is generated from GitHub Secrets (see .github/workflows/release.yml).
+
+storePassword=YOUR_STORE_PASSWORD
+keyPassword=YOUR_KEY_PASSWORD
+keyAlias=YOUR_KEY_ALIAS
+storeFile=YOUR_KEYSTORE_PATH

@@ -68,12 +68,10 @@ class _SoundboxSpeakerWidgetState extends State<SoundboxSpeakerWidget>
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: hasAnnouncement
-                  ? (isDark
-                      ? AppColors.blueSurface
-                      : const Color(0xFFE8F0FE))
+                  ? (isDark ? AppColors.blueSurface : const Color(0xFFE8F0FE))
                   : (isDark
-                      ? const Color(0xFF1E1E24)
-                      : const Color(0xFFF1F5F9)),
+                        ? const Color(0xFF1E1E24)
+                        : const Color(0xFFF1F5F9)),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(

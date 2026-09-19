@@ -1,116 +1,147 @@
-# ⚡ SplitPe
-
 <div align="center">
-  <h3><strong>0% MDR Arbitrage & Algorithmic UPI Bill-Tranching System</strong></h3>
-  <p>An experimental fintech application built with Flutter & CRED NeoPOP Design System.</p>
 
-  <p>
-    <a href="https://technoaman.github.io/SplitPe/"><img src="https://img.shields.io/badge/🌐_Live_Demo-Visit_SplitPe_Web-00E676?style=for-the-badge&logoColor=black" alt="Live Demo" /></a>
-    <a href="https://github.com/TechnoAman/SplitPe"><img src="https://img.shields.io/badge/🔥_Impressions-1M%2B_Views-FF4500?style=for-the-badge" alt="1M+ Views" /></a>
-    <a href="https://github.com/TechnoAman/SplitPe"><img src="https://img.shields.io/badge/❤️_Viral-15K%2B_Likes-E91E63?style=for-the-badge" alt="15K+ Likes" /></a>
-    <a href="https://github.com/TechnoAman/SplitPe"><img src="https://img.shields.io/badge/Reddit-850%2B_Upvotes-FF4500?style=for-the-badge&logo=reddit&logoColor=white" alt="Reddit 850+ Upvotes" /></a>
-    <a href="https://github.com/TechnoAman/SplitPe"><img src="https://img.shields.io/badge/Flutter-3.x-02569B?style=for-the-badge&logo=flutter&logoColor=white" alt="Flutter" /></a>
-    <a href="https://github.com/TechnoAman/SplitPe"><img src="https://img.shields.io/badge/Design-CRED_NeoPOP-00E676?style=for-the-badge&logo=flutter&logoColor=black" alt="CRED NeoPOP" /></a>
-    <a href="https://github.com/TechnoAman/SplitPe"><img src="https://img.shields.io/badge/NPCI_MDR-0%25_Arbitrage-00FF66?style=for-the-badge" alt="0% MDR" /></a>
-    <a href="https://github.com/TechnoAman/SplitPe"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge" alt="License" /></a>
-  </p>
+# ⚡ Track Pe
 
-  <p>
-    🔗 <strong>Live App:</strong> <a href="https://technoaman.github.io/SplitPe/">https://technoaman.github.io/SplitPe/</a> &nbsp;|&nbsp; 🔥 <strong>1M+ Views</strong> &nbsp;|&nbsp; ❤️ <strong>15K+ Likes</strong> &nbsp;|&nbsp; 🔺 <strong>850+ Upvotes</strong>
-  </p>
+**An open-source Flutter project by It Is Unique Official.**
+
+An educational Flutter app that demonstrates algorithmic sub-₹2,000 UPI bill tranching.
+
+[![CI](https://github.com/itisuniqueofficial-gh/track-pe/actions/workflows/ci.yml/badge.svg)](https://github.com/itisuniqueofficial-gh/track-pe/actions/workflows/ci.yml)
+[![Release](https://github.com/itisuniqueofficial-gh/track-pe/actions/workflows/release.yml/badge.svg)](https://github.com/itisuniqueofficial-gh/track-pe/actions/workflows/release.yml)
+[![Flutter](https://img.shields.io/badge/Flutter-3.47.4-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
+[![Dart](https://img.shields.io/badge/Dart-3.13-0175C2?logo=dart&logoColor=white)](https://dart.dev)
+
 </div>
 
-https://github.com/user-attachments/assets/cf6e4d3f-3286-4bcd-9004-080d9a7c6520
-
-
-
-
 ---
 
-> [!WARNING]
-> ### ⚖️ **Educational & Research Purpose Disclaimer**
-> **SplitPe is developed strictly for academic demonstration, educational research, and algorithmic simulation purposes.**
-> It serves as an open-source technical proof-of-concept exploring how UPI deep-linking schemas, NPCI interchange threshold rules, and client-side payment state machines interact.
+> [!IMPORTANT]
+> **Educational / research use only.** Track Pe does **not** process, settle, or verify UPI
+> payments — your UPI app performs any actual transaction. All MDR/GST figures shown are
+> **illustrative assumptions**, not current official NPCI/RBI/CBIC policy. Always verify current
+> rules with authoritative sources.
 
----
+## Links
 
-## 💡 The Concept: 0% MDR Arbitrage
+| Resource | URL |
+|----------|-----|
+| Website | https://track-pe.itisuniqueofficial.com/ |
+| Repository | https://github.com/itisuniqueofficial-gh/track-pe |
+| Discussions | https://github.com/itisuniqueofficial-gh/track-pe/discussions |
+| Issues | https://github.com/itisuniqueofficial-gh/track-pe/issues |
+| Support | track-pe@itisuniqueofficial.com |
+| Company | It Is Unique Official — https://www.itisuniqueofficial.com/ |
+| Developer | Jaydatt Khodave — https://jaydatt.pages.dev/ |
 
-Under current Indian digital payments guidelines (NPCI & CBIC), single merchant UPI transactions exceeding **₹2,000** attract interchange/MDR fees (up to 0.4% - 1.1%) **plus an additional 18% GST** on the MDR service fee, while transactions of **₹2,000 or under remain 100% free (0% MDR & 0% GST)**.
+## What it is
 
-For small kirana merchants, restaurants, and bill payers, high-ticket transactions incur compounding gateway fees and unclaimable GST. **SplitPe** programmatically solves this by algorithmically tranching any arbitrary bill (e.g. ₹6,800) into optimal sub-₹2,000 compliant micro-slices:
+Under Indian digital-payment rules, single UPI merchant transactions above **₹2,000** may attract
+MDR/interchange fees (plus GST on the fee), while transactions at/under ₹2,000 are generally
+exempt. Track Pe illustrates how a larger bill can be algorithmically split into compliant
+sub-₹2,000 tranches, each rendered as a standard `upi://pay` intent/QR. It is a client-side,
+offline-capable demonstration with no backend.
 
-$$\text{Total Bill} = \sum_{i=1}^{n} \text{Tranche}_i \quad \text{where} \quad \forall i, \; \text{Tranche}_i \le ₹1,999.00$$
+## Features
 
-$$\text{Net Surcharge Paid} = 0\% \text{ MDR} + 0\% \text{ GST} = \mathbf{₹0.00}$$
+- **Tranching engine** — splits a bill into ≤ ₹1,999 tranches using integer-paise arithmetic that
+  guarantees the parts sum exactly to the total and never exceed the cap.
+- **POS checkout** — enter/scan a bill, pick a merchant handle, generate the tranche set.
+- **Group split** — divide a bill across 2–8 people with exact remainder handling.
+- **MDR "Roast" calculator** — illustrative annual MDR + GST estimator.
+- **QR scanner** — camera scanning with torch, camera switch and manual paste entry.
+- **UPI validator** — NPCI-style VPA regex, 50+ PSP/bank handle registry, XSS sanitization,
+  amount bounds, and rejection of non-UPI/dangerous URI schemes.
+- **NeoPOP UI** with light/dark themes.
 
----
+## Architecture
 
-## ✨ Features
+```text
+lib/
+├── models/     # SplitOrder, Tranche (integer-paise source of truth)
+├── services/   # split_engine, upi_validator, upi_service, mdr_policy
+├── views/      # POS, group split, savings calculator, QR scanner, home
+├── widgets/    # NeoPOP components, tranche cards, modals, logo
+├── theme/      # colors, themes, ThemeController
+├── utils/      # money (paise helpers), app_logger
+└── main.dart
+```
 
-- ⚡ **Algorithmic Tranching Engine**: Automatically slices bills into compliant sub-₹2,000 micro-payments with distinct transaction reference keys.
-- 🎨 **CRED NeoPOP 3D UI**: Built using the official NeoPOP neo-brutalist design framework with tactile depth, tilted elevation buttons, and obsidian dark mode.
-- 🔊 **Soundbox Audio Simulator**: Emulates real-time merchant audio confirmations (*"Payment of ₹X received via SplitPe"*) using an integrated speaker widget.
-- 🍻 **Group Bill Splitter**: Splits dining and group bills with friends, generating instant 0% MDR share links for WhatsApp.
-- 📷 **Integrated QR Scanner**: Fast mobile camera scanner decoding UPI payment intents (`pa`, `pn`, `am`, `tr`, `tn`).
-- 📊 **Interactive MDR Roast Calculator**: Visualizes annual surcharge losses vs. zero-fee savings.
+Money is handled internally as **integer paise** (`₹1 = 100 paise`); conversion to decimal happens
+only at presentation boundaries. Illustrative MDR/GST logic lives in a single `MdrPolicy` service.
 
----
+## Supported platforms
 
-## 🛠️ Tech Stack & Architecture
+Android, iOS, Web, Linux, macOS, Windows (Flutter multi-platform).
 
-- **Framework**: [Flutter](https://flutter.dev) (Dart)
-- **Design System**: Official [`neopop`](https://pub.dev/packages/neopop) (CRED Design Framework)
-- **State & Architecture**: Clean MVC / Service Architecture
-- **Scanner**: [`mobile_scanner`](https://pub.dev/packages/mobile_scanner)
-- **QR Generation**: [`qr_flutter`](https://pub.dev/packages/qr_flutter)
-- **Typography**: [Google Fonts](https://fonts.google.com) (Space Grotesk & Inter)
-- **Sharing & Intents**: [`url_launcher`](https://pub.dev/packages/url_launcher), [`share_plus`](https://pub.dev/packages/share_plus)
+## Getting started
 
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Flutter SDK `>=3.3.0`
-- Android Studio / VS Code / Xcode
-
-### Installation
+Prerequisites: Flutter `3.47.4` (stable), Dart `3.13.x`.
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/TechnoAman/SplitPe.git
-
-# 2. Navigate to project directory
-cd SplitPe
-
-# 3. Install dependencies
 flutter pub get
-
-# 4. Run the app
 flutter run
 ```
 
----
-
-## 🧪 Testing
+## Development
 
 ```bash
-# Run unit & widget test suites
-flutter test
-
-# Run code analyzer
-flutter analyze
+dart format .                                   # format
+flutter analyze                                 # static analysis
+flutter test                                    # unit + widget tests
+flutter build web --release --base-href "/"     # production web build (root domain)
 ```
 
----
+## Testing
 
-## 📄 License
+Unit and widget tests cover the split engine (boundaries, exact-sum, cap), the money utility, the
+MDR policy, order status transitions, and the UPI validator. Run `flutter test`.
 
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+## Release process
 
----
+Releases are **fully automated** and GitHub-native — no local builds, signing, or
+tagging are required. Pushing to `main` runs CI, computes the next version from
+conventional commits, builds and signs the Android artifacts, validates them,
+generates `SHA256SUMS` and release notes, and publishes a GitHub Release. A
+manual `workflow_dispatch` (auto/patch/minor/major) uses the same pipeline. See
+[docs/RELEASES.md](docs/RELEASES.md), [docs/CI_CD.md](docs/CI_CD.md), and
+[docs/ANDROID_SIGNING.md](docs/ANDROID_SIGNING.md).
 
-<div align="center">
-  <sub>Built with ⚡ by <a href="https://github.com/TechnoAman">Aman Tiwari</a></sub>
-</div>
+## Downloads
+
+Android artifacts are attached to each [GitHub Release](https://github.com/itisuniqueofficial-gh/track-pe/releases):
+`TrackPe-vX.Y.Z-release.aab`, `TrackPe-vX.Y.Z-arm64-v8a.apk`,
+`TrackPe-vX.Y.Z-armeabi-v7a.apk`, `TrackPe-vX.Y.Z-x86_64.apk`,
+`TrackPe-vX.Y.Z-universal.apk`, and `SHA256SUMS`.
+
+## Support
+
+- **Questions / ideas / community:** [GitHub Discussions](https://github.com/itisuniqueofficial-gh/track-pe/discussions)
+- **Bugs:** [GitHub Issues](https://github.com/itisuniqueofficial-gh/track-pe/issues)
+- **Private / security:** track-pe@itisuniqueofficial.com — see [SECURITY.md](SECURITY.md)
+
+Never include UPI IDs, payment details, or secrets in issues.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md).
+
+## License
+
+Track Pe is intended to be released as **full open source (2026)** by It Is Unique Official.
+
+> [!NOTE]
+> **License pending owner decision.** The original repository shipped without a `LICENSE`
+> file, and the specific open-source license has not yet been finalized. Until a license is
+> added by the owner, all rights are reserved by default. Choosing and committing the
+> open-source license is a required owner action (see the project maintainers).
+
+## Attribution
+
+```text
+Track Pe
+© 2026 It Is Unique Official
+Developed by Jaydatt Khodave
+```
+
+Maintained by **It Is Unique Official** (https://www.itisuniqueofficial.com/).
+Developed by **Jaydatt Khodave** (https://jaydatt.pages.dev/).

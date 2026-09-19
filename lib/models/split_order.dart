@@ -1,10 +1,16 @@
+import '../services/mdr_policy.dart';
 import 'tranche.dart';
 
+/// An order that has been divided into one or more [Tranche]s.
+///
+/// Monetary values are stored as integer paise ([totalAmountPaise]); the
+/// `double` getters ([totalAmount], [mdrSavings], ...) are display-only
+/// conveniences derived at the presentation boundary.
 class SplitOrder {
   final String orderId;
   final String merchantVpa;
   final String merchantName;
-  final double totalAmount;
+  final int totalAmountPaise;
   final String note;
   final List<Tranche> tranches;
   final DateTime createdAt;
@@ -13,40 +19,52 @@ class SplitOrder {
     required this.orderId,
     required this.merchantVpa,
     required this.merchantName,
-    required this.totalAmount,
+    required this.totalAmountPaise,
     required this.note,
     required this.tranches,
     required this.createdAt,
   });
 
-  double get paidAmount => tranches
-      .where((t) => t.isPaid)
-      .fold(0.0, (sum, item) => sum + item.amount);
+  double get totalAmount => totalAmountPaise / 100.0;
 
-  double get remainingAmount => (totalAmount - paidAmount).clamp(0.0, totalAmount);
+  int get paidAmountPaise =>
+      tranches.where((t) => t.isPaid).fold(0, (sum, t) => sum + t.amountPaise);
 
-  double get progress => totalAmount == 0 ? 0.0 : (paidAmount / totalAmount);
+  double get paidAmount => paidAmountPaise / 100.0;
 
-  bool get isFullyPaid => tranches.isNotEmpty && tranches.every((t) => t.isPaid);
+  int get remainingAmountPaise =>
+      (totalAmountPaise - paidAmountPaise).clamp(0, totalAmountPaise);
 
-  /// Base MDR without SplitPe (0.4% on full transaction if > ₹2,000, capped at ₹300 for >= 75k)
-  double get mdrStandard {
-    if (totalAmount <= 2000) return 0.0;
-    final fee = totalAmount * 0.004;
-    return fee > 300 ? 300.0 : fee;
-  }
+  double get remainingAmount => remainingAmountPaise / 100.0;
 
-  /// 18% GST levied on base MDR (CBIC financial services surcharge)
-  double get gstOnMdr => double.parse((mdrStandard * 0.18).toStringAsFixed(2));
+  double get progress =>
+      totalAmountPaise == 0 ? 0.0 : paidAmountPaise / totalAmountPaise;
 
-  /// Total standard surcharge (Base MDR + 18% GST)
-  double get totalStandardFee => double.parse((mdrStandard + gstOnMdr).toStringAsFixed(2));
+  bool get isFullyPaid =>
+      tranches.isNotEmpty && tranches.every((t) => t.isPaid);
 
-  /// MDR with SplitPe (0% since each tranche <= ₹2,000)
-  double get mdrWithSplitPe => 0.0;
+  // --- Illustrative MDR / GST figures (see [MdrPolicy] for disclaimer) ---
 
-  /// Net savings achieved (100% of Base MDR + 18% GST retained)
-  double get mdrSavings => double.parse((totalStandardFee - mdrWithSplitPe).toStringAsFixed(2));
+  /// Illustrative base MDR (paise) if the full amount were paid in one go.
+  int get mdrStandardPaise => MdrPolicy.baseMdrOnAmount(totalAmountPaise);
+  double get mdrStandard => mdrStandardPaise / 100.0;
+
+  /// Illustrative 18% GST (paise) on the base MDR.
+  int get gstOnMdrPaise => MdrPolicy.gstOnMdr(mdrStandardPaise);
+  double get gstOnMdr => gstOnMdrPaise / 100.0;
+
+  /// Illustrative total surcharge (paise): base MDR + GST.
+  int get totalStandardFeePaise => mdrStandardPaise + gstOnMdrPaise;
+  double get totalStandardFee => totalStandardFeePaise / 100.0;
+
+  /// With per-tranche amounts kept at/under the threshold, the illustrative
+  /// MDR is zero.
+  int get mdrWithTrackPePaise => 0;
+  double get mdrWithTrackPe => 0.0;
+
+  /// Illustrative surcharge avoided (paise).
+  int get mdrSavingsPaise => totalStandardFeePaise - mdrWithTrackPePaise;
+  double get mdrSavings => mdrSavingsPaise / 100.0;
 
   Tranche? get currentPendingTranche {
     try {

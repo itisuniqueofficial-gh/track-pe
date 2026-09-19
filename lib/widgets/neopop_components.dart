@@ -87,7 +87,8 @@ class NeoPopSurfaceCard extends StatelessWidget {
     final isDark = ThemeController.isDark(context);
     final bg = backgroundColor ?? AppColors.cardBg(context);
     final border = borderColor ?? AppColors.border(context);
-    final shadow = shadowColor ??
+    final shadow =
+        shadowColor ??
         (isDark ? const Color(0xFF000000) : const Color(0xFFCBD5E1));
 
     final content = Container(

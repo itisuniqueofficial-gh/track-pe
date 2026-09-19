@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
-import '../widgets/splitpe_logo.dart';
+import '../widgets/track_pe_logo.dart';
 import 'group_split_view.dart';
 import 'pos_checkout_view.dart';
 import 'savings_calculator_view.dart';
@@ -15,7 +15,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
-  final GlobalKey<PosCheckoutViewState> _posKey = GlobalKey<PosCheckoutViewState>();
+  final GlobalKey<PosCheckoutViewState> _posKey =
+      GlobalKey<PosCheckoutViewState>();
 
   late final List<Widget> _views;
 
@@ -52,7 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.bg(context),
         elevation: 0,
-        title: const SplitPeLogo(size: 24),
+        title: const TrackPeLogo(size: 24),
         actions: [
           IconButton(
             onPressed: _handleTopBarScan,
@@ -71,7 +72,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 onPressed: ThemeController.toggleTheme,
                 icon: Icon(
                   dark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
-                  color: dark ? AppColors.goldenYellow : AppColors.primaryBlueDark,
+                  color: dark
+                      ? AppColors.goldenYellow
+                      : AppColors.primaryBlueDark,
                   size: 22,
                 ),
                 tooltip: dark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
@@ -80,15 +83,16 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           IconButton(
             onPressed: () => _showAboutMdrDialog(context),
-            icon: const Icon(Icons.info_outline_rounded, color: AppColors.textSecondary, size: 22),
+            icon: const Icon(
+              Icons.info_outline_rounded,
+              color: AppColors.textSecondary,
+              size: 22,
+            ),
             tooltip: 'MDR Rules & Guide',
           ),
         ],
       ),
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _views,
-      ),
+      body: IndexedStack(index: _currentIndex, children: _views),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF0F0F12) : Colors.white,
@@ -103,7 +107,9 @@ class _HomeScreenState extends State<HomeScreen> {
           selectedIndex: _currentIndex,
           backgroundColor: Colors.transparent,
           elevation: 0,
-          indicatorColor: isDark ? AppColors.blueSurface : const Color(0xFFE8F0FE),
+          indicatorColor: isDark
+              ? AppColors.blueSurface
+              : const Color(0xFFE8F0FE),
           labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
           onDestinationSelected: (index) {
             setState(() {
@@ -164,7 +170,9 @@ class _HomeScreenState extends State<HomeScreen> {
             border: Border.all(color: AppColors.border(context)),
             boxShadow: [
               BoxShadow(
-                color: isDark ? Colors.black.withAlpha(150) : Colors.black.withAlpha(25),
+                color: isDark
+                    ? Colors.black.withAlpha(150)
+                    : Colors.black.withAlpha(25),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -176,7 +184,11 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.shield_rounded, color: AppColors.primaryBlue, size: 20),
+                  const Icon(
+                    Icons.shield_rounded,
+                    color: AppColors.primaryBlue,
+                    size: 20,
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     'The 0% MDR Arbitrage',
@@ -190,9 +202,10 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 14),
               Text(
-                '• NPCI guidelines mandate interchange fees on merchant transactions exceeding ₹2,000.\n'
-                '• Transactions of ₹2,000 or under remain 0% MDR compliant.\n'
-                '• SplitPe demonstrates algorithmic bill tranching to simulate surcharge-free transactions.',
+                '• The rates and ₹2,000 threshold shown here are illustrative educational assumptions, not current official NPCI/CBIC/RBI policy.\n'
+                '• Track Pe demonstrates algorithmic bill tranching for study and simulation only.\n'
+                '• Track Pe does not process, settle, or verify any payment — your UPI app performs the actual transaction.\n'
+                '• Always verify current MDR/GST rules with authoritative sources.',
                 style: TextStyle(
                   fontSize: 12,
                   height: 1.5,
@@ -203,9 +216,13 @@ class _HomeScreenState extends State<HomeScreen> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E1A14) : const Color(0xFFFEF3C7),
+                  color: isDark
+                      ? const Color(0xFF1E1A14)
+                      : const Color(0xFFFEF3C7),
                   border: Border.all(
-                    color: isDark ? const Color(0xFF5A4418) : const Color(0xFFF59E0B),
+                    color: isDark
+                        ? const Color(0xFF5A4418)
+                        : const Color(0xFFF59E0B),
                   ),
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -220,12 +237,25 @@ class _HomeScreenState extends State<HomeScreen> {
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w700,
-                          color: isDark ? const Color(0xFFFBBF24) : const Color(0xFFB45309),
+                          color: isDark
+                              ? const Color(0xFFFBBF24)
+                              : const Color(0xFFB45309),
                           height: 1.3,
                         ),
                       ),
                     ),
                   ],
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                'Track Pe · Open-source project by It Is Unique Official.\n'
+                'Developed by Jaydatt Khodave.\n'
+                '© 2026 It Is Unique Official',
+                style: TextStyle(
+                  fontSize: 10,
+                  height: 1.4,
+                  color: AppColors.textSub(context),
                 ),
               ),
               const SizedBox(height: 18),
@@ -244,7 +274,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   child: const Text(
                     'I UNDERSTAND',
-                    style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 0.8),
+                    style: TextStyle(
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 0.8,
+                    ),
                   ),
                 ),
               ),

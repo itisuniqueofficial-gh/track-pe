@@ -1,0 +1,278 @@
+name: Release
+
+# GitHub-native release pipeline. GitHub is the source of truth for versioning:
+# pushes to main compute the next version from conventional commits, build and
+# sign Android artifacts, validate them, and publish a GitHub Release + tag.
+#
+# The tag is created by softprops/action-gh-release using GITHUB_TOKEN. Pushes
+# made with GITHUB_TOKEN do NOT trigger further workflow runs, so no tag-based
+# workflow exists and no release loop can occur.
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/PULL_REQUEST_TEMPLATE.md"
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: "Version bump (auto uses conventional commits)"
+        type: choice
+        default: auto
+        options: [auto, patch, minor, major]
+
+# Least privilege: only release creation (contents) is needed.
+permissions:
+  contents: write
+
+# Serialize releases so two runs cannot compute the same version concurrently.
+concurrency:
+  group: track-pe-release
+  cancel-in-progress: false
+
+env:
+  FLUTTER_VERSION: "3.47.4"
+
+jobs:
+  release:
+    name: Version, build, sign & publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Skip if commit requests it
+        if: github.event_name == 'push' && contains(github.event.head_commit.message, '[skip release]')
+        run: |
+          echo "Commit requested [skip release]; exiting."
+          exit 0
+
+      - name: Checkout (full history for versioning)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify signing secrets are present
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          missing=0
+          for name in ANDROID_KEYSTORE_BASE64 ANDROID_KEYSTORE_PASSWORD ANDROID_KEY_PASSWORD ANDROID_KEY_ALIAS; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Required signing secret $name is not set."
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            echo "::error::Production signing configuration is incomplete. Failing (no debug fallback for releases)."
+            exit 1
+          fi
+
+      - name: Compute version
+        id: version
+        env:
+          FORCE_LEVEL: ${{ github.event.inputs.release_type || 'auto' }}
+        run: bash .github/scripts/compute_version.sh
+
+      - name: Check for existing release (idempotency)
+        id: existing
+        if: steps.version.outputs.release == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already published; skipping (idempotent)."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Java (Temurin 17)
+        if: steps.version.outputs.release == 'true' && steps.existing.outputs.skip != 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Flutter
+        if: steps.version.outputs.release == 'true' && steps.existing.outputs.skip != 'true'
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        if: steps.version.outputs.release == 'true' && steps.existing.outputs.skip != 'true'
+        run: flutter pub get
+
+      - name: Quality gates (format, analyze, test)
+        if: steps.version.outputs.release == 'true' && steps.existing.outputs.skip != 'true'
+        run: |
+          dart format --output=none --set-exit-if-changed .
+          flutter analyze
+          flutter test
+
+      - name: Decode keystore & write key.properties
+        if: steps.version.outputs.release == 'true' && steps.existing.outputs.skip != 'true'
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          KEYSTORE="${RUNNER_TEMP}/trackpe-release.jks"
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$KEYSTORE"
+          {
+            echo "storePassword=${ANDROID_KEYSTORE_PASSWORD}"
+            echo "keyPassword=${ANDROID_KEY_PASSWORD}"
+            echo "keyAlias=${ANDROID_KEY_ALIAS}"
+            echo "storeFile=${KEYSTORE}"
+          } > android/key.properties
+
+      - name: Build signed AAB
+        if: steps.version.outputs.release == 'true' && steps.existing.outputs.skip != 'true'
+        run: |
+          flutter build appbundle --release \
+            --build-name="${{ steps.version.outputs.version }}" \
+            --build-number="${{ steps.version.outputs.version_code }}"
+
+      - name: Build signed APKs (split per ABI)
+        if: steps.version.outputs.release == 'true' && steps.existing.outputs.skip != 'true'
+        run: |
+          flutter build apk --release --split-per-abi \
+            --build-name="${{ steps.version.outputs.version }}" \
+            --build-number="${{ steps.version.outputs.version_code }}"
+
+      - name: Build signed universal APK
+        if: steps.version.outputs.release == 'true' && steps.existing.outputs.skip != 'true'
+        run: |
+          flutter build apk --release \
+            --build-name="${{ steps.version.outputs.version }}" \
+            --build-number="${{ steps.version.outputs.version_code }}"
+
+      - name: Collect & rename artifacts
+        id: artifacts
+        if: steps.version.outputs.release == 'true' && steps.existing.outputs.skip != 'true'
+        run: |
+          V="${{ steps.version.outputs.version }}"
+          OUT="release-artifacts"
+          mkdir -p "$OUT"
+          cp build/app/outputs/bundle/release/app-release.aab      "$OUT/TrackPe-v${V}-release.aab"
+          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk   "$OUT/TrackPe-v${V}-arm64-v8a.apk"
+          cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk "$OUT/TrackPe-v${V}-armeabi-v7a.apk"
+          cp build/app/outputs/flutter-apk/app-x86_64-release.apk      "$OUT/TrackPe-v${V}-x86_64.apk"
+          cp build/app/outputs/flutter-apk/app-release.apk             "$OUT/TrackPe-v${V}-universal.apk"
+          echo "dir=$OUT" >> "$GITHUB_OUTPUT"
+          ls -l "$OUT"
+
+      - name: Validate artifacts (exist, non-empty, metadata, signature)
+        if: steps.version.outputs.release == 'true' && steps.existing.outputs.skip != 'true'
+        run: |
+          set -e
+          OUT="${{ steps.artifacts.outputs.dir }}"
+          V="${{ steps.version.outputs.version }}"
+          VC="${{ steps.version.outputs.version_code }}"
+          EXPECTED_PKG="com.itisuniqueofficial.trackpe"
+
+          for f in "$OUT"/*.aab "$OUT"/*.apk; do
+            [ -s "$f" ] || { echo "::error::Missing/empty artifact: $f"; exit 1; }
+          done
+
+          SDK="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+          BT="$(ls -d "$SDK"/build-tools/* | sort -V | tail -n1)"
+          echo "Using build-tools: $BT"
+
+          UAPK="$OUT/TrackPe-v${V}-universal.apk"
+          BADGING="$("$BT/aapt2" dump badging "$UAPK")"
+          echo "$BADGING" | grep -E "package: name='${EXPECTED_PKG}'" >/dev/null \
+            || { echo "::error::Package id mismatch (expected ${EXPECTED_PKG})"; echo "$BADGING" | head -1; exit 1; }
+          echo "$BADGING" | grep -E "versionName='${V}'" >/dev/null \
+            || { echo "::error::versionName mismatch (expected ${V})"; exit 1; }
+          echo "$BADGING" | grep -E "versionCode='${VC}'" >/dev/null \
+            || { echo "::error::versionCode mismatch (expected ${VC})"; exit 1; }
+
+          # Every APK must carry a valid signature (release keystore).
+          for apk in "$OUT"/*.apk; do
+            "$BT/apksigner" verify --print-certs "$apk" >/dev/null \
+              || { echo "::error::APK not properly signed: $apk"; exit 1; }
+          done
+          echo "Artifact validation passed: package/version/versionCode correct and APKs signed."
+
+      - name: Generate SHA256SUMS
+        if: steps.version.outputs.release == 'true' && steps.existing.outputs.skip != 'true'
+        run: |
+          OUT="${{ steps.artifacts.outputs.dir }}"
+          ( cd "$OUT" && sha256sum TrackPe-* > SHA256SUMS && cat SHA256SUMS )
+
+      - name: Generate release notes
+        id: notes
+        if: steps.version.outputs.release == 'true' && steps.existing.outputs.skip != 'true'
+        run: |
+          V="${{ steps.version.outputs.version }}"
+          VC="${{ steps.version.outputs.version_code }}"
+          TAG="${{ steps.version.outputs.tag }}"
+          PREV="$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | head -n1 || true)"
+          {
+            echo "## Track Pe ${TAG}"
+            echo ""
+            echo "### Changes"
+            if [ -n "$PREV" ]; then
+              git log --pretty=format:'- %s (%h)' "${PREV}..HEAD"
+            else
+              git log --pretty=format:'- %s (%h)'
+            fi
+            echo ""
+            echo ""
+            echo "### Android"
+            echo "- Version: ${V}"
+            echo "- Version Code: ${VC}"
+            echo "- Application ID: com.itisuniqueofficial.trackpe"
+            echo ""
+            echo "### Downloads"
+            echo "- Android App Bundle: \`TrackPe-v${V}-release.aab\`"
+            echo "- ARM64 APK: \`TrackPe-v${V}-arm64-v8a.apk\`"
+            echo "- ARMv7 APK: \`TrackPe-v${V}-armeabi-v7a.apk\`"
+            echo "- x86_64 APK: \`TrackPe-v${V}-x86_64.apk\`"
+            echo "- Universal APK: \`TrackPe-v${V}-universal.apk\`"
+            echo ""
+            echo "### Verification"
+            echo "SHA-256 checksums are in \`SHA256SUMS\` (\`sha256sum -c SHA256SUMS\`). All binaries were built and signed by GitHub Actions."
+            echo ""
+            echo "### Important"
+            echo "Track Pe is an educational/research application and does not process or settle UPI payments."
+            echo ""
+            echo "### Website"
+            echo "https://track-pe.itisuniqueofficial.com/"
+            echo ""
+            echo "### Support"
+            echo "track-pe@itisuniqueofficial.com"
+            echo ""
+            echo "---"
+            echo "Track Pe · © 2026 It Is Unique Official · Developed by Jaydatt Khodave"
+          } > RELEASE_NOTES.md
+
+      - name: Publish GitHub Release (creates tag)
+        if: steps.version.outputs.release == 'true' && steps.existing.outputs.skip != 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          name: Track Pe ${{ steps.version.outputs.tag }}
+          body_path: RELEASE_NOTES.md
+          fail_on_unmatched_files: true
+          files: |
+            release-artifacts/TrackPe-v${{ steps.version.outputs.version }}-release.aab
+            release-artifacts/TrackPe-v${{ steps.version.outputs.version }}-arm64-v8a.apk
+            release-artifacts/TrackPe-v${{ steps.version.outputs.version }}-armeabi-v7a.apk
+            release-artifacts/TrackPe-v${{ steps.version.outputs.version }}-x86_64.apk
+            release-artifacts/TrackPe-v${{ steps.version.outputs.version }}-universal.apk
+            release-artifacts/SHA256SUMS
+
+      - name: Clean up signing material
+        if: always()
+        run: |
+          rm -f android/key.properties "${RUNNER_TEMP}/trackpe-release.jks" || true

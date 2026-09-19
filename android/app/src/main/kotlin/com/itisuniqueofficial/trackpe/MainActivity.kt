@@ -1,4 +1,4 @@
-package com.splitpe.app.splitpe
+package com.itisuniqueofficial.trackpe
 
 import io.flutter.embedding.android.FlutterActivity
 

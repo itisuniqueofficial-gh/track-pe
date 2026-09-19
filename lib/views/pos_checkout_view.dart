@@ -353,7 +353,8 @@ class PosCheckoutViewState extends State<PosCheckoutView> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
-                          validation.errorMessage ?? 'Please enter a valid UPI ID (e.g. store@upi)',
+                          validation.errorMessage ??
+                              'Please enter a valid UPI ID (e.g. store@upi)',
                         ),
                         backgroundColor: AppColors.alertRed,
                       ),
@@ -363,7 +364,8 @@ class PosCheckoutViewState extends State<PosCheckoutView> {
 
                   setState(() {
                     _vpaController.text = validation.vpa!;
-                    _nameController.text = tempNameController.text.trim().isNotEmpty
+                    _nameController.text =
+                        tempNameController.text.trim().isNotEmpty
                         ? tempNameController.text.trim()
                         : validation.merchantName!;
                     _recalculateOrder();
@@ -442,7 +444,9 @@ class PosCheckoutViewState extends State<PosCheckoutView> {
   Widget build(BuildContext context) {
     final order = _currentOrder;
     final amt = double.tryParse(_amountController.text.trim()) ?? 0.0;
-    final baseMdr = (amt <= 2000 ? 0.0 : (amt * 0.004 > 300 ? 300.0 : amt * 0.004));
+    final baseMdr = (amt <= 2000
+        ? 0.0
+        : (amt * 0.004 > 300 ? 300.0 : amt * 0.004));
     final gstFee = baseMdr * 0.18;
     final totalFee = baseMdr + gstFee;
     final standardFee = totalFee.toStringAsFixed(2);
@@ -549,10 +553,14 @@ class PosCheckoutViewState extends State<PosCheckoutView> {
                                 if (isVpaSet) ...[
                                   Builder(
                                     builder: (context) {
-                                      final val = UpiValidator.validate(_vpaController.text);
+                                      final val = UpiValidator.validate(
+                                        _vpaController.text,
+                                      );
                                       if (val.issuerLabel != null) {
                                         return Padding(
-                                          padding: const EdgeInsets.only(top: 2),
+                                          padding: const EdgeInsets.only(
+                                            top: 2,
+                                          ),
                                           child: Row(
                                             children: [
                                               const Icon(
@@ -630,9 +638,7 @@ class PosCheckoutViewState extends State<PosCheckoutView> {
                                 center: Alignment.center,
                                 radius: 0.85,
                                 colors: [
-                                  Colors.white.withAlpha(
-                                    isDark ? 56 : 66,
-                                  ),
+                                  Colors.white.withAlpha(isDark ? 56 : 66),
                                   Colors.transparent,
                                 ],
                                 stops: const [0.6, 1.0],
@@ -908,7 +914,7 @@ class PosCheckoutViewState extends State<PosCheckoutView> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     const Text(
-                                      'SPLITPE (0% MDR)',
+                                      'TRACK PE (0% MDR)',
                                       style: TextStyle(
                                         fontSize: 9,
                                         fontWeight: FontWeight.w800,
@@ -929,7 +935,9 @@ class PosCheckoutViewState extends State<PosCheckoutView> {
                                       style: TextStyle(
                                         fontSize: 7.5,
                                         fontWeight: FontWeight.w600,
-                                        color: AppColors.primaryBlue.withAlpha(200),
+                                        color: AppColors.primaryBlue.withAlpha(
+                                          200,
+                                        ),
                                       ),
                                     ),
                                   ],

@@ -13,11 +13,11 @@ void main() {
       systemNavigationBarIconBrightness: Brightness.light,
     ),
   );
-  runApp(const SplitPeApp());
+  runApp(const TrackPeApp());
 }
 
-class SplitPeApp extends StatelessWidget {
-  const SplitPeApp({super.key});
+class TrackPeApp extends StatelessWidget {
+  const TrackPeApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +25,7 @@ class SplitPeApp extends StatelessWidget {
       valueListenable: ThemeController.themeMode,
       builder: (context, currentMode, _) {
         return MaterialApp(
-          title: 'SplitPe · 0% MDR UPI Engine',
+          title: 'Track Pe',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,

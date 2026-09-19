@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../theme/app_theme.dart';
 import '../widgets/neopop_components.dart';
+import '../services/mdr_policy.dart';
+import '../utils/money.dart';
 
 class SavingsCalculatorView extends StatefulWidget {
   const SavingsCalculatorView({super.key});
@@ -12,31 +14,34 @@ class SavingsCalculatorView extends StatefulWidget {
 }
 
 class _SavingsCalculatorViewState extends State<SavingsCalculatorView> {
-  double _monthlyTurnover = 1500000; // 15 Lakhs
+  double _monthlyTurnover = 1500000; // ₹15 Lakhs
   double _avgBillSize = 4500;
-  final _currencyFormat = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+  final _currencyFormat = NumberFormat.currency(
+    locale: 'en_IN',
+    symbol: '₹',
+    decimalDigits: 0,
+  );
 
-  // MDR math: 0.4% base MDR on transactions > 2000 + 18% GST on MDR
-  double get _monthlyBaseMdrLoss {
-    if (_avgBillSize <= 2000) return 0.0;
-    return _monthlyTurnover * 0.004;
-  }
+  // Illustrative MDR math computed in integer paise via MdrPolicy.
+  int get _monthlyBaseMdrPaise => MdrPolicy.monthlyBaseMdr(
+    turnoverPaise: Money.rupeesToPaise(_monthlyTurnover),
+    avgBillPaise: Money.rupeesToPaise(_avgBillSize),
+  );
 
-  double get _monthlyGstLoss => _monthlyBaseMdrLoss * 0.18;
+  int get _monthlyGstPaise => MdrPolicy.gstOnMdr(_monthlyBaseMdrPaise);
 
-  double get _monthlyMdrLoss => _monthlyBaseMdrLoss + _monthlyGstLoss;
-
-  double get _annualBaseMdrLoss => _monthlyBaseMdrLoss * 12;
-  double get _annualGstLoss => _monthlyGstLoss * 12;
-  double get _annualMdrLoss => _monthlyMdrLoss * 12;
+  int get _annualBaseMdrPaise => _monthlyBaseMdrPaise * 12;
+  int get _annualGstPaise => _monthlyGstPaise * 12;
+  int get _annualMdrPaise => _annualBaseMdrPaise + _annualGstPaise;
 
   String get _roastCommentary {
-    if (_annualMdrLoss >= 100000) {
-      return '💸 You are losing ₹${_currencyFormat.format(_annualMdrLoss)}/yr (MDR + 18% GST)! That is literally a brand new M3 MacBook Pro or a Bali trip funded for payment gateways.';
-    } else if (_annualMdrLoss >= 30000) {
-      return '☕ You are losing ₹${_currencyFormat.format(_annualMdrLoss)}/yr (MDR + 18% GST)! That is 1,500 cups of premium filter coffee down the drain.';
+    final formatted = Money.formatInr(_annualMdrPaise);
+    if (_annualMdrPaise >= 10000000) {
+      return '💸 You could be paying about $formatted/yr in illustrative MDR + 18% GST to payment aggregators.';
+    } else if (_annualMdrPaise >= 3000000) {
+      return '☕ You could be paying about $formatted/yr in illustrative MDR + 18% GST — it adds up fast.';
     } else {
-      return '🛡️ SplitPe shields every single rupee with compliant sub-₹2,000 tranche routing (Zero MDR & Zero GST).';
+      return '🛡️ Track Pe illustrates how sub-₹2,000 tranche routing could keep this near zero (educational only).';
     }
   }
 
@@ -51,7 +56,9 @@ class _SavingsCalculatorViewState extends State<SavingsCalculatorView> {
         children: [
           // Header Card
           NeoPopSurfaceCard(
-            backgroundColor: isDark ? const Color(0xFF131A2E) : const Color(0xFFE8F0FE),
+            backgroundColor: isDark
+                ? const Color(0xFF131A2E)
+                : const Color(0xFFE8F0FE),
             borderColor: AppColors.primaryBlue,
             depth: 4.0,
             padding: const EdgeInsets.all(18),
@@ -198,7 +205,7 @@ class _SavingsCalculatorViewState extends State<SavingsCalculatorView> {
 
           const SizedBox(height: 14),
 
-          // Output Numbers: Annual MDR Loss vs SplitPe Savings
+          // Output Numbers: Annual MDR Loss vs Track Pe Savings
           Row(
             children: [
               // Loss Box
@@ -224,7 +231,7 @@ class _SavingsCalculatorViewState extends State<SavingsCalculatorView> {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        _currencyFormat.format(_annualMdrLoss),
+                        Money.formatInr(_annualMdrPaise),
                         style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w900,
@@ -247,7 +254,7 @@ class _SavingsCalculatorViewState extends State<SavingsCalculatorView> {
               ),
               const SizedBox(width: 10),
 
-              // SplitPe 0% MDR Box
+              // Track Pe 0% MDR Box
               Expanded(
                 child: NeoPopSurfaceCard(
                   backgroundColor: isDark
@@ -260,7 +267,7 @@ class _SavingsCalculatorViewState extends State<SavingsCalculatorView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'SPLITPE SAVINGS',
+                        'TRACK PE SAVINGS',
                         style: TextStyle(
                           fontSize: 9,
                           fontWeight: FontWeight.w900,
@@ -270,7 +277,7 @@ class _SavingsCalculatorViewState extends State<SavingsCalculatorView> {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        _currencyFormat.format(_annualMdrLoss),
+                        Money.formatInr(_annualMdrPaise),
                         style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w900,
@@ -294,7 +301,7 @@ class _SavingsCalculatorViewState extends State<SavingsCalculatorView> {
             ],
           ),
 
-          if (_annualMdrLoss > 0) ...[
+          if (_annualMdrPaise > 0) ...[
             const SizedBox(height: 10),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -307,10 +314,14 @@ class _SavingsCalculatorViewState extends State<SavingsCalculatorView> {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.receipt_long_outlined, size: 14, color: AppColors.primaryBlue),
+                      const Icon(
+                        Icons.receipt_long_outlined,
+                        size: 14,
+                        color: AppColors.primaryBlue,
+                      ),
                       const SizedBox(width: 6),
                       Text(
-                        '0.4% Base MDR: ${_currencyFormat.format(_annualBaseMdrLoss)}',
+                        '0.4% Base MDR: ${Money.formatInr(_annualBaseMdrPaise)}',
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w700,
@@ -320,7 +331,7 @@ class _SavingsCalculatorViewState extends State<SavingsCalculatorView> {
                     ],
                   ),
                   Text(
-                    '+ 18% GST: ${_currencyFormat.format(_annualGstLoss)}',
+                    '+ 18% GST: ${Money.formatInr(_annualGstPaise)}',
                     style: const TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w800,
@@ -381,10 +392,9 @@ class _SavingsCalculatorViewState extends State<SavingsCalculatorView> {
             onTap: () {
               final tweet =
                   '🚨 I calculated how much the new 0.4% UPI MDR + 18% GST is costing my business:\n\n'
-                  '💸 Total Loss: ${_currencyFormat.format(_annualMdrLoss)}/year to payment aggregators!\n'
-                  '🛡️ Saved with @SplitPe via sub-₹2,000 smart tranche routing (0% MDR + 0% GST).\n\n'
-                  'Check it out: https://technoaman.github.io/SplitPe/\n'
-                  '#Fintech #UPI #SplitPe #ZeroMDR';
+                  '💸 Total Loss: ${Money.formatInr(_annualMdrPaise)}/year to payment aggregators!\n'
+                  '🛡️ Track Pe illustrates sub-₹2,000 tranche routing (educational demo, no real settlement).\n\n'
+                  '#Fintech #UPI #TrackPe';
               final url = Uri.parse(
                 'https://twitter.com/intent/tweet?text=${Uri.encodeComponent(tweet)}',
               );

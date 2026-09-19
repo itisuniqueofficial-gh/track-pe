@@ -18,7 +18,15 @@ class GroupSplitView extends StatefulWidget {
 class _GroupSplitViewState extends State<GroupSplitView> {
   final _amountController = TextEditingController(text: '6800');
   int _peopleCount = 4;
-  final List<String> _friendNames = ['You', 'Rohit', 'Sneha', 'Vikram', 'Pooja', 'Ananya', 'Aarav'];
+  final List<String> _friendNames = [
+    'You',
+    'Rohit',
+    'Sneha',
+    'Vikram',
+    'Pooja',
+    'Ananya',
+    'Aarav',
+  ];
   SplitOrder? _groupOrder;
 
   @override
@@ -50,8 +58,11 @@ class _GroupSplitViewState extends State<GroupSplitView> {
 
   void _shareAllViaWhatsApp() {
     if (_groupOrder == null) return;
-    final perPerson = (_groupOrder!.totalAmount / _peopleCount).toStringAsFixed(2);
-    final msg = '🍻 Dinner Bill Split on SplitPe (0% MDR)!\n'
+    final perPerson = (_groupOrder!.totalAmount / _peopleCount).toStringAsFixed(
+      2,
+    );
+    final msg =
+        '🍻 Dinner Bill Split on Track Pe (educational demo)!\n'
         'Total: ₹${_groupOrder!.totalAmount.toStringAsFixed(0)} | Friends: $_peopleCount\n'
         'Share per person: ₹$perPerson\n\n'
         'Pay your share directly via UPI without any surcharge!';
@@ -79,7 +90,11 @@ class _GroupSplitViewState extends State<GroupSplitView> {
               children: [
                 const Row(
                   children: [
-                    Icon(Icons.groups_rounded, color: AppColors.primaryBlue, size: 20),
+                    Icon(
+                      Icons.groups_rounded,
+                      color: AppColors.primaryBlue,
+                      size: 20,
+                    ),
                     SizedBox(width: 8),
                     Text(
                       'GROUP BILL SPLIT (ZERO MDR)',
@@ -119,7 +134,9 @@ class _GroupSplitViewState extends State<GroupSplitView> {
                           border: InputBorder.none,
                           hintText: '0.00',
                           hintStyle: TextStyle(
-                            color: isDark ? const Color(0xFF383B46) : const Color(0xFFCBD5E1),
+                            color: isDark
+                                ? const Color(0xFF383B46)
+                                : const Color(0xFFCBD5E1),
                           ),
                         ),
                         onSubmitted: (_) => _recalculateGroup(),
@@ -146,11 +163,20 @@ class _GroupSplitViewState extends State<GroupSplitView> {
                     Row(
                       children: [
                         NeoPopButton(
-                          color: isDark ? const Color(0xFF1E1E22) : const Color(0xFFE2E8F0),
-                          bottomShadowColor: isDark ? Colors.black : const Color(0xFFCBD5E1),
-                          rightShadowColor: isDark ? Colors.black : const Color(0xFFCBD5E1),
+                          color: isDark
+                              ? const Color(0xFF1E1E22)
+                              : const Color(0xFFE2E8F0),
+                          bottomShadowColor: isDark
+                              ? Colors.black
+                              : const Color(0xFFCBD5E1),
+                          rightShadowColor: isDark
+                              ? Colors.black
+                              : const Color(0xFFCBD5E1),
                           depth: 2.0,
-                          border: Border.all(color: AppColors.border(context), width: 1.2),
+                          border: Border.all(
+                            color: AppColors.border(context),
+                            width: 1.2,
+                          ),
                           onTapUp: () {
                             if (_peopleCount > 2) {
                               setState(() {
@@ -161,15 +187,27 @@ class _GroupSplitViewState extends State<GroupSplitView> {
                           },
                           child: Padding(
                             padding: const EdgeInsets.all(8),
-                            child: Icon(Icons.remove, size: 16, color: AppColors.text(context)),
+                            child: Icon(
+                              Icons.remove,
+                              size: 16,
+                              color: AppColors.text(context),
+                            ),
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 8,
+                          ),
                           margin: const EdgeInsets.symmetric(horizontal: 6),
                           decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF18181B) : const Color(0xFFF1F5F9),
-                            border: Border.all(color: AppColors.border(context), width: 1.2),
+                            color: isDark
+                                ? const Color(0xFF18181B)
+                                : const Color(0xFFF1F5F9),
+                            border: Border.all(
+                              color: AppColors.border(context),
+                              width: 1.2,
+                            ),
                           ),
                           child: Text(
                             '$_peopleCount',
@@ -181,11 +219,20 @@ class _GroupSplitViewState extends State<GroupSplitView> {
                           ),
                         ),
                         NeoPopButton(
-                          color: isDark ? const Color(0xFF1E1E22) : const Color(0xFFE2E8F0),
-                          bottomShadowColor: isDark ? Colors.black : const Color(0xFFCBD5E1),
-                          rightShadowColor: isDark ? Colors.black : const Color(0xFFCBD5E1),
+                          color: isDark
+                              ? const Color(0xFF1E1E22)
+                              : const Color(0xFFE2E8F0),
+                          bottomShadowColor: isDark
+                              ? Colors.black
+                              : const Color(0xFFCBD5E1),
+                          rightShadowColor: isDark
+                              ? Colors.black
+                              : const Color(0xFFCBD5E1),
                           depth: 2.0,
-                          border: Border.all(color: AppColors.border(context), width: 1.2),
+                          border: Border.all(
+                            color: AppColors.border(context),
+                            width: 1.2,
+                          ),
                           onTapUp: () {
                             if (_peopleCount < 8) {
                               setState(() {
@@ -196,7 +243,11 @@ class _GroupSplitViewState extends State<GroupSplitView> {
                           },
                           child: Padding(
                             padding: const EdgeInsets.all(8),
-                            child: Icon(Icons.add, size: 16, color: AppColors.text(context)),
+                            child: Icon(
+                              Icons.add,
+                              size: 16,
+                              color: AppColors.text(context),
+                            ),
                           ),
                         ),
                       ],
@@ -214,7 +265,11 @@ class _GroupSplitViewState extends State<GroupSplitView> {
             text: 'SHARE SPLIT LINKS ON WHATSAPP 📲',
             color: AppColors.primaryBlue,
             textColor: Colors.white,
-            prefixIcon: const Icon(Icons.share_rounded, color: Colors.white, size: 16),
+            prefixIcon: const Icon(
+              Icons.share_rounded,
+              color: Colors.white,
+              size: 16,
+            ),
             onTap: _shareAllViaWhatsApp,
           ),
 

@@ -1,9 +1,13 @@
 enum TrancheStatus { pending, inProgress, paid, failed }
 
+/// A single sub-payment ("tranche") within a [SplitOrder].
+///
+/// The monetary value is stored as integer paise ([amountPaise]) to guarantee
+/// exact sums; [amount] is a display-only convenience getter.
 class Tranche {
   final String id;
   final int index;
-  final double amount;
+  final int amountPaise;
   final String upiUri;
   final String? payerName;
   TrancheStatus status;
@@ -13,7 +17,7 @@ class Tranche {
   Tranche({
     required this.id,
     required this.index,
-    required this.amount,
+    required this.amountPaise,
     required this.upiUri,
     this.payerName,
     this.status = TrancheStatus.pending,
@@ -21,12 +25,15 @@ class Tranche {
     this.txnRef,
   });
 
+  /// Display-only rupee value. Do not use for arithmetic; use [amountPaise].
+  double get amount => amountPaise / 100.0;
+
   bool get isPaid => status == TrancheStatus.paid;
 
   Tranche copyWith({
     String? id,
     int? index,
-    double? amount,
+    int? amountPaise,
     String? upiUri,
     String? payerName,
     TrancheStatus? status,
@@ -36,7 +43,7 @@ class Tranche {
     return Tranche(
       id: id ?? this.id,
       index: index ?? this.index,
-      amount: amount ?? this.amount,
+      amountPaise: amountPaise ?? this.amountPaise,
       upiUri: upiUri ?? this.upiUri,
       payerName: payerName ?? this.payerName,
       status: status ?? this.status,

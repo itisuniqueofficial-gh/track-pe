@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
-class SplitPeLogo extends StatelessWidget {
+/// Track Pe wordmark + emblem used in the app bar and modals.
+class TrackPeLogo extends StatelessWidget {
   final double size;
   final bool showBadge;
   final bool isCompact;
 
-  const SplitPeLogo({
+  const TrackPeLogo({
     super.key,
     this.size = 28,
     this.showBadge = true,
@@ -57,28 +58,31 @@ class SplitPeLogo extends StatelessWidget {
         if (!isCompact) ...[
           const SizedBox(width: 10),
           // Logotype
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'SPLIT',
-                style: TextStyle(
-                  color: AppColors.text(context),
-                  fontWeight: FontWeight.w900,
-                  fontSize: size * 0.68,
-                  letterSpacing: 0.5,
+          Semantics(
+            label: 'Track Pe',
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'TRACK',
+                  style: TextStyle(
+                    color: AppColors.text(context),
+                    fontWeight: FontWeight.w900,
+                    fontSize: size * 0.68,
+                    letterSpacing: 0.5,
+                  ),
                 ),
-              ),
-              Text(
-                'PE',
-                style: TextStyle(
-                  color: AppColors.primaryBlue,
-                  fontWeight: FontWeight.w900,
-                  fontSize: size * 0.68,
-                  letterSpacing: 0.5,
+                Text(
+                  'PE',
+                  style: TextStyle(
+                    color: AppColors.primaryBlue,
+                    fontWeight: FontWeight.w900,
+                    fontSize: size * 0.68,
+                    letterSpacing: 0.5,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           if (showBadge) ...[
             const SizedBox(width: 8),

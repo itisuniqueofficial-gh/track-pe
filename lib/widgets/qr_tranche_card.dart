@@ -35,8 +35,8 @@ class QrTrancheCard extends StatelessWidget {
           color: isPaid
               ? AppColors.primaryBlue
               : isCurrentActive
-                  ? AppColors.primaryBlueDark
-                  : AppColors.border(context),
+              ? AppColors.primaryBlueDark
+              : AppColors.border(context),
           width: isCurrentActive || isPaid ? 2.0 : 1.5,
         ),
         boxShadow: [
@@ -44,8 +44,8 @@ class QrTrancheCard extends StatelessWidget {
             color: isPaid
                 ? AppColors.primaryBlue.withAlpha(120)
                 : isCurrentActive
-                    ? AppColors.primaryBlueDark.withAlpha(120)
-                    : (isDark ? const Color(0xFF000000) : const Color(0xFFCBD5E1)),
+                ? AppColors.primaryBlueDark.withAlpha(120)
+                : (isDark ? const Color(0xFF000000) : const Color(0xFFCBD5E1)),
             offset: const Offset(3, 3),
             blurRadius: 0,
           ),
@@ -66,9 +66,13 @@ class QrTrancheCard extends StatelessWidget {
                     color: isPaid
                         ? AppColors.primaryBlue
                         : isCurrentActive
-                            ? AppColors.primaryBlueDark
-                            : (isDark ? const Color(0xFF27272A) : const Color(0xFFE2E8F0)),
-                    textColor: isPaid || isCurrentActive ? Colors.white : AppColors.text(context),
+                        ? AppColors.primaryBlueDark
+                        : (isDark
+                              ? const Color(0xFF27272A)
+                              : const Color(0xFFE2E8F0)),
+                    textColor: isPaid || isCurrentActive
+                        ? Colors.white
+                        : AppColors.text(context),
                   ),
                   if (tranche.payerName != null) ...[
                     const SizedBox(width: 8),
@@ -100,8 +104,12 @@ class QrTrancheCard extends StatelessWidget {
               else
                 NeoPopPillBadge(
                   label: 'PENDING',
-                  color: isDark ? const Color(0xFF27272A) : const Color(0xFFE2E8F0),
-                  textColor: isDark ? AppColors.textMuted : AppColors.lightTextMuted,
+                  color: isDark
+                      ? const Color(0xFF27272A)
+                      : const Color(0xFFE2E8F0),
+                  textColor: isDark
+                      ? AppColors.textMuted
+                      : AppColors.lightTextMuted,
                 ),
             ],
           ),
@@ -167,7 +175,9 @@ class QrTrancheCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w900,
-                        color: isPaid ? AppColors.primaryBlue : AppColors.text(context),
+                        color: isPaid
+                            ? AppColors.primaryBlue
+                            : AppColors.text(context),
                         letterSpacing: -0.5,
                       ),
                     ),
@@ -175,15 +185,24 @@ class QrTrancheCard extends StatelessWidget {
 
                     // Zero MDR Badge
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.primaryBlue.withAlpha(20),
-                        border: Border.all(color: AppColors.primaryBlue.withAlpha(80)),
+                        border: Border.all(
+                          color: AppColors.primaryBlue.withAlpha(80),
+                        ),
                       ),
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.bolt, size: 12, color: AppColors.primaryBlue),
+                          Icon(
+                            Icons.bolt,
+                            size: 12,
+                            color: AppColors.primaryBlue,
+                          ),
                           SizedBox(width: 3),
                           Text(
                             '0% MDR Arbitrage',
@@ -224,19 +243,25 @@ class QrTrancheCard extends StatelessWidget {
                 Expanded(
                   flex: 3,
                   child: NeoPopButton(
-                    color: isCurrentActive ? AppColors.primaryGreen : AppColors.neonCyan,
+                    color: isCurrentActive
+                        ? AppColors.primaryGreen
+                        : AppColors.neonCyan,
                     bottomShadowColor: const Color(0xFF000000),
                     rightShadowColor: const Color(0xFF000000),
                     depth: 3.0,
                     border: Border.all(color: Colors.black, width: 1.5),
                     onTapUp: () async {
-                      final launched = await UpiService.launchUpiIntent(tranche.upiUri);
+                      final launched = await UpiService.launchUpiIntent(
+                        tranche.upiUri,
+                      );
                       if (!launched) {
                         await UpiService.copyToClipboard(tranche.upiUri);
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('⚡ Copied UPI Payment Link to Clipboard!'),
+                              content: Text(
+                                '⚡ Copied UPI Payment Link to Clipboard!',
+                              ),
                               backgroundColor: AppColors.surfaceElevated,
                               duration: Duration(seconds: 2),
                             ),
@@ -249,7 +274,11 @@ class QrTrancheCard extends StatelessWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.rocket_launch_rounded, color: Colors.black, size: 14),
+                          const Icon(
+                            Icons.rocket_launch_rounded,
+                            color: Colors.black,
+                            size: 14,
+                          ),
                           const SizedBox(width: 4),
                           Flexible(
                             child: FittedBox(
@@ -287,7 +316,11 @@ class QrTrancheCard extends StatelessWidget {
                       child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.check_circle_outline, color: AppColors.textSecondary, size: 14),
+                          Icon(
+                            Icons.check_circle_outline,
+                            color: AppColors.textSecondary,
+                            size: 14,
+                          ),
                           SizedBox(width: 4),
                           Flexible(
                             child: FittedBox(
@@ -315,7 +348,9 @@ class QrTrancheCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
                 color: AppColors.primaryGreen.withAlpha(25),
-                border: Border.all(color: AppColors.primaryGreen.withAlpha(100)),
+                border: Border.all(
+                  color: AppColors.primaryGreen.withAlpha(100),
+                ),
               ),
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,

@@ -1,145 +1,143 @@
 import 'dart:math';
 import '../models/split_order.dart';
 import '../models/tranche.dart';
+import '../utils/money.dart';
 import 'upi_validator.dart';
 
+/// Splits a bill into sub-threshold tranches.
+///
+/// All arithmetic is performed in integer paise so that the tranche amounts
+/// always sum exactly to the requested total (no floating-point drift), and no
+/// tranche can exceed the configured cap.
 class SplitEngine {
-  /// Default safe threshold per tranche (below ₹2,000 to be 100% exempt from MDR)
-  static const double safeTrancheCap = 1999.0;
+  /// Default safe per-tranche cap: ₹1,999.00 (kept under the ₹2,000 threshold).
+  static const int safeTrancheCapPaise = 199900;
 
-  /// Calculates randomized or fixed tranche amounts that sum exactly to [totalAmount]
-  /// with each tranche <= [maxTranche].
-  static List<double> calculateTrancheAmounts({
-    required double totalAmount,
-    double maxTranche = safeTrancheCap,
+  /// Minimum sensible tranche size: ₹10.00.
+  static const int minTranchePaise = 1000;
+
+  /// Distributes [totalPaise] across tranches, each `<= maxTranchePaise`,
+  /// summing exactly to [totalPaise].
+  ///
+  /// When [randomize] is true and the total is a whole-rupee amount, interior
+  /// tranches are chosen at random whole-rupee values for a natural look; the
+  /// final tranche always absorbs the exact remainder.
+  static List<int> calculateTranchePaise({
+    required int totalPaise,
+    int maxTranchePaise = safeTrancheCapPaise,
     bool randomize = true,
+    Random? random,
   }) {
-    if (totalAmount <= 0) return [];
-    if (totalAmount <= maxTranche) return [totalAmount];
+    if (totalPaise <= 0) return [];
+    if (totalPaise <= maxTranchePaise) return [totalPaise];
 
-    final int trancheCount = (totalAmount / maxTranche).ceil();
-    final List<double> amounts = [];
-    final random = Random();
-    double remaining = totalAmount;
+    final rng = random ?? Random();
+    final int count = (totalPaise + maxTranchePaise - 1) ~/ maxTranchePaise;
+    final List<int> amounts = [];
+    int remaining = totalPaise;
 
-    if (!randomize || trancheCount <= 1) {
-      for (int i = 0; i < trancheCount; i++) {
-        if (i == trancheCount - 1) {
-          amounts.add(double.parse(remaining.toStringAsFixed(2)));
-        } else {
-          final amt = min(maxTranche, remaining);
-          amounts.add(double.parse(amt.toStringAsFixed(2)));
-          remaining -= amt;
-        }
-      }
-      return amounts;
-    }
+    for (int i = 0; i < count - 1; i++) {
+      final remainingCount = count - 1 - i;
 
-    // Natural randomized distribution
-    for (int i = 0; i < trancheCount - 1; i++) {
-      final remainingCount = trancheCount - 1 - i;
-      // To ensure remaining tranches can fulfill the rest without exceeding maxTranche:
-      final minAllowed = max(10.0, remaining - (remainingCount * maxTranche));
-      // To ensure remaining tranches have at least min (e.g. ₹10) each:
-      final maxAllowed = min(maxTranche, remaining - (remainingCount * 10.0));
+      // Bounds that keep every subsequent tranche within [min, max].
+      final int minAllowed = max(
+        minTranchePaise,
+        remaining - remainingCount * maxTranchePaise,
+      );
+      final int maxAllowed = min(
+        maxTranchePaise,
+        remaining - remainingCount * minTranchePaise,
+      );
 
-      double picked;
+      int picked;
       if (maxAllowed <= minAllowed) {
         picked = minAllowed;
-      } else {
-        final isWhole = (totalAmount % 1 == 0);
-        final spread = maxAllowed - minAllowed;
-
-        if (isWhole && spread >= 10) {
-          final minInt = minAllowed.ceil();
-          final maxInt = maxAllowed.floor();
-          if (maxInt > minInt) {
-            // Pick a random whole rupee
-            picked = (minInt + random.nextInt(maxInt - minInt + 1)).toDouble();
-          } else {
-            picked = minInt.toDouble();
-          }
+      } else if (randomize) {
+        // Prefer random whole-rupee values within the allowed band.
+        final int minRupee = (minAllowed + 99) ~/ 100; // ceil to whole rupee
+        final int maxRupee = maxAllowed ~/ 100; // floor to whole rupee
+        if (maxRupee > minRupee) {
+          picked = (minRupee + rng.nextInt(maxRupee - minRupee + 1)) * 100;
         } else {
-          picked = minAllowed + random.nextDouble() * (maxAllowed - minAllowed);
-          picked = (picked * 100).round() / 100.0;
+          picked = minAllowed + rng.nextInt(maxAllowed - minAllowed + 1);
         }
+      } else {
+        // Deterministic: fill earlier tranches to the maximum allowed.
+        picked = maxAllowed;
       }
 
-      amounts.add(double.parse(picked.toStringAsFixed(2)));
+      amounts.add(picked);
       remaining -= picked;
-      remaining = double.parse(remaining.toStringAsFixed(2));
     }
 
-    // Last tranche gets the exact remaining amount
-    amounts.add(double.parse(remaining.toStringAsFixed(2)));
+    amounts.add(remaining); // exact remainder
 
-    // Fallback sanity check: if any tranche violated bounds, use balanced split
-    if (amounts.any((a) => a > maxTranche || a <= 0)) {
+    // Safety net: if any invariant was violated, fall back to a balanced split.
+    final bool invalid =
+        amounts.any((a) => a > maxTranchePaise || a <= 0) ||
+        amounts.fold(0, (s, a) => s + a) != totalPaise;
+    if (invalid) {
       amounts.clear();
-      remaining = totalAmount;
-      final base = (totalAmount / trancheCount);
-      for (int i = 0; i < trancheCount; i++) {
-        if (i == trancheCount - 1) {
-          amounts.add(double.parse(remaining.toStringAsFixed(2)));
-        } else {
-          final amt = double.parse(base.toStringAsFixed(2));
-          amounts.add(amt);
-          remaining -= amt;
-        }
+      final int base = totalPaise ~/ count;
+      int distributed = 0;
+      for (int i = 0; i < count - 1; i++) {
+        amounts.add(base);
+        distributed += base;
       }
+      amounts.add(totalPaise - distributed);
     }
 
     return amounts;
   }
 
-  /// Creates a SplitOrder by dividing [totalAmount] into sub-₹2,000 tranches.
+  /// Creates a [SplitOrder] dividing [totalAmount] rupees into sub-threshold
+  /// tranches. [totalAmount] is the input boundary and is converted to paise.
   static SplitOrder createTrancheOrder({
     required double totalAmount,
     required String merchantVpa,
     required String merchantName,
-    String note = 'SplitPe Checkout',
-    double maxTranche = safeTrancheCap,
+    String note = 'Track Pe Checkout',
+    int maxTranchePaise = safeTrancheCapPaise,
     bool randomize = true,
   }) {
     final orderId =
         'ORD${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}';
-    final List<Tranche> tranches = [];
+    final int totalPaise = Money.rupeesToPaise(totalAmount);
 
-    if (totalAmount <= 0) {
+    if (totalPaise <= 0) {
       return SplitOrder(
         orderId: orderId,
         merchantVpa: merchantVpa,
         merchantName: merchantName,
-        totalAmount: 0,
+        totalAmountPaise: 0,
         note: note,
-        tranches: [],
+        tranches: const [],
         createdAt: DateTime.now(),
       );
     }
 
-    final amounts = calculateTrancheAmounts(
-      totalAmount: totalAmount,
-      maxTranche: maxTranche,
+    final amounts = calculateTranchePaise(
+      totalPaise: totalPaise,
+      maxTranchePaise: maxTranchePaise,
       randomize: randomize,
     );
 
     final trancheCount = amounts.length;
+    final tranches = <Tranche>[];
     for (int i = 0; i < trancheCount; i++) {
       final trancheAmt = amounts[i];
       final index = i + 1;
-      final trancheId = '${orderId}_$index';
       final upiUri = buildUpiUri(
         vpa: merchantVpa,
         name: merchantName,
-        amount: trancheAmt,
+        amountPaise: trancheAmt,
         note: trancheCount == 1 ? note : '$note Tranche $index/$trancheCount',
       );
-
       tranches.add(
         Tranche(
-          id: trancheId,
+          id: '${orderId}_$index',
           index: index,
-          amount: trancheAmt,
+          amountPaise: trancheAmt,
           upiUri: upiUri,
         ),
       );
@@ -149,14 +147,15 @@ class SplitEngine {
       orderId: orderId,
       merchantVpa: merchantVpa,
       merchantName: merchantName,
-      totalAmount: totalAmount,
+      totalAmountPaise: totalPaise,
       note: note,
       tranches: tranches,
       createdAt: DateTime.now(),
     );
   }
 
-  /// Creates a group bill split between friends (each share guaranteed <= ₹2,000 if split count allows)
+  /// Splits a bill evenly across [numberOfPeople], with the last share
+  /// absorbing any rounding remainder so the shares sum exactly to the total.
   static SplitOrder createGroupSplitOrder({
     required double totalAmount,
     required int numberOfPeople,
@@ -167,38 +166,34 @@ class SplitEngine {
   }) {
     final orderId =
         'GRP${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}';
-    final List<Tranche> tranches = [];
-    final people = max(1, numberOfPeople);
+    final int totalPaise = Money.rupeesToPaise(totalAmount);
+    final int people = max(1, numberOfPeople);
+    final int perPersonBase = totalPaise ~/ people;
 
-    double perPersonBase = (totalAmount / people);
-    double distributedTotal = 0;
-
+    final tranches = <Tranche>[];
+    int distributed = 0;
     for (int i = 0; i < people; i++) {
-      String personName = (friendNames != null && i < friendNames.length)
+      final personName = (friendNames != null && i < friendNames.length)
           ? friendNames[i]
           : 'Friend #${i + 1}';
 
-      double amt;
-      if (i == people - 1) {
-        amt = double.parse((totalAmount - distributedTotal).toStringAsFixed(2));
-      } else {
-        amt = double.parse(perPersonBase.toStringAsFixed(2));
-      }
-      distributedTotal += amt;
+      final int amt = (i == people - 1)
+          ? (totalPaise - distributed)
+          : perPersonBase;
+      distributed += amt;
 
-      final trancheId = '${orderId}_${i + 1}';
       final upiUri = buildUpiUri(
         vpa: merchantVpa,
         name: merchantName,
-        amount: amt,
+        amountPaise: amt,
         note: '$note ($personName)',
       );
 
       tranches.add(
         Tranche(
-          id: trancheId,
+          id: '${orderId}_${i + 1}',
           index: i + 1,
-          amount: amt,
+          amountPaise: amt,
           payerName: personName,
           upiUri: upiUri,
         ),
@@ -209,25 +204,26 @@ class SplitEngine {
       orderId: orderId,
       merchantVpa: merchantVpa,
       merchantName: merchantName,
-      totalAmount: totalAmount,
+      totalAmountPaise: totalPaise,
       note: note,
       tranches: tranches,
       createdAt: DateTime.now(),
     );
   }
 
-  /// Builds standard NPCI UPI Intent URI (clean format compliant with GPay, PhonePe & Paytm)
+  /// Builds a standard NPCI UPI intent URI. [amountPaise] is formatted to an
+  /// exact 2-decimal `am=` value with integer arithmetic.
   static String buildUpiUri({
     required String vpa,
     required String name,
-    required double amount,
+    required int amountPaise,
     String? txnRef,
     required String note,
   }) {
     final params = <String, String>{
       'pa': vpa.trim(),
       if (name.trim().isNotEmpty) 'pn': name.trim(),
-      'am': amount.toStringAsFixed(2),
+      'am': Money.amountString(amountPaise),
       'cu': 'INR',
       if (note.trim().isNotEmpty) 'tn': note.trim(),
     };
@@ -243,9 +239,8 @@ class SplitEngine {
     return 'upi://pay?$query';
   }
 
-  /// Parses and validates a raw scanned UPI QR string using UpiValidator
+  /// Parses and validates a raw scanned UPI QR string using [UpiValidator].
   static Map<String, String> parseUpiUri(String rawData) {
-    final result = UpiValidator.validate(rawData);
-    return result.toLegacyMap();
+    return UpiValidator.validate(rawData).toLegacyMap();
   }
 }

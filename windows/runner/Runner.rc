@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.splitpe.app" "\0"
-            VALUE "FileDescription", "splitpe" "\0"
+            VALUE "CompanyName", "It Is Unique Official" "\0"
+            VALUE "FileDescription", "Track Pe" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "splitpe" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.splitpe.app. All rights reserved." "\0"
-            VALUE "OriginalFilename", "splitpe.exe" "\0"
-            VALUE "ProductName", "splitpe" "\0"
+            VALUE "InternalName", "track_pe" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 It Is Unique Official. All rights reserved." "\0"
+            VALUE "OriginalFilename", "track_pe.exe" "\0"
+            VALUE "ProductName", "Track Pe" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

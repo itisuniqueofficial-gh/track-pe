@@ -69,7 +69,11 @@ class _QrScannerViewState extends State<QrScannerView>
           borderRadius: BorderRadius.circular(16),
           side: const BorderSide(color: AppColors.alertRed, width: 1.5),
         ),
-        icon: const Icon(Icons.gpp_bad_rounded, color: AppColors.alertRed, size: 36),
+        icon: const Icon(
+          Icons.gpp_bad_rounded,
+          color: AppColors.alertRed,
+          size: 36,
+        ),
         title: const Text(
           'INVALID OR UNSAFE QR',
           style: TextStyle(
@@ -101,9 +105,14 @@ class _QrScannerViewState extends State<QrScannerView>
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.alertRed,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
-            child: const Text('Scan Again', style: TextStyle(fontWeight: FontWeight.w800)),
+            child: const Text(
+              'Scan Again',
+              style: TextStyle(fontWeight: FontWeight.w800),
+            ),
           ),
         ],
       ),
@@ -119,7 +128,11 @@ class _QrScannerViewState extends State<QrScannerView>
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text(
           'PASTE UPI LINK / VPA',
-          style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14, letterSpacing: 0.8),
+          style: TextStyle(
+            fontWeight: FontWeight.w900,
+            fontSize: 14,
+            letterSpacing: 0.8,
+          ),
         ),
         content: TextField(
           controller: textController,
@@ -133,7 +146,10 @@ class _QrScannerViewState extends State<QrScannerView>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
           ),
           ElevatedButton(
             onPressed: () {
@@ -144,7 +160,10 @@ class _QrScannerViewState extends State<QrScannerView>
               backgroundColor: AppColors.primaryGreen,
               foregroundColor: Colors.black,
             ),
-            child: const Text('Use QR Data', style: TextStyle(fontWeight: FontWeight.w800)),
+            child: const Text(
+              'Use QR Data',
+              style: TextStyle(fontWeight: FontWeight.w800),
+            ),
           ),
         ],
       ),
@@ -170,7 +189,9 @@ class _QrScannerViewState extends State<QrScannerView>
           IconButton(
             icon: Icon(
               _isTorchOn ? Icons.flash_on_rounded : Icons.flash_off_rounded,
-              color: _isTorchOn ? AppColors.goldenYellow : AppColors.textSecondary,
+              color: _isTorchOn
+                  ? AppColors.goldenYellow
+                  : AppColors.textSecondary,
             ),
             onPressed: () async {
               await _scannerController.toggleTorch();
@@ -180,7 +201,10 @@ class _QrScannerViewState extends State<QrScannerView>
             },
           ),
           IconButton(
-            icon: const Icon(Icons.flip_camera_ios_rounded, color: AppColors.textSecondary),
+            icon: const Icon(
+              Icons.flip_camera_ios_rounded,
+              color: AppColors.textSecondary,
+            ),
             onPressed: () => _scannerController.switchCamera(),
           ),
         ],
@@ -216,7 +240,11 @@ class _QrScannerViewState extends State<QrScannerView>
                           const SizedBox(height: 16),
                           ElevatedButton.icon(
                             onPressed: _showManualEntryDialog,
-                            icon: const Icon(Icons.paste_rounded, color: Colors.black, size: 16),
+                            icon: const Icon(
+                              Icons.paste_rounded,
+                              color: Colors.black,
+                              size: 16,
+                            ),
                             label: const Text('Paste UPI Link / Demo Data'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.primaryGreen,
@@ -252,7 +280,10 @@ class _QrScannerViewState extends State<QrScannerView>
                     Positioned.fill(
                       child: Container(
                         decoration: BoxDecoration(
-                          border: Border.all(color: AppColors.primaryGreen.withAlpha(120), width: 1.0),
+                          border: Border.all(
+                            color: AppColors.primaryGreen.withAlpha(120),
+                            width: 1.0,
+                          ),
                         ),
                       ),
                     ),
@@ -295,7 +326,10 @@ class _QrScannerViewState extends State<QrScannerView>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFF0C0D10).withAlpha(220),
                       border: Border.all(color: const Color(0xFF27272A)),
@@ -357,7 +391,11 @@ class _QrScannerViewState extends State<QrScannerView>
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.qr_code_2, size: 14, color: AppColors.primaryGreen),
+            const Icon(
+              Icons.qr_code_2,
+              size: 14,
+              color: AppColors.primaryGreen,
+            ),
             const SizedBox(width: 6),
             Text(
               label,
@@ -379,10 +417,7 @@ class _ScannerOverlayPainter extends CustomPainter {
   final Size cutoutSize;
   final Color borderColor;
 
-  _ScannerOverlayPainter({
-    required this.cutoutSize,
-    required this.borderColor,
-  });
+  _ScannerOverlayPainter({required this.cutoutSize, required this.borderColor});
 
   @override
   void paint(Canvas canvas, Size size) {

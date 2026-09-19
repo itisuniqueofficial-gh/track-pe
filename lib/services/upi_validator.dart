@@ -27,10 +27,7 @@ class UpiValidationResult {
   });
 
   factory UpiValidationResult.invalid(String error) {
-    return UpiValidationResult(
-      isValid: false,
-      errorMessage: error,
-    );
+    return UpiValidationResult(isValid: false, errorMessage: error);
   }
 
   /// Label showing the detected issuing App & Bank (e.g. "Google Pay · HDFC Bank")
@@ -150,7 +147,10 @@ class UpiValidator {
   static String sanitizeText(String input) {
     var clean = input.replaceAll(_scriptBlockRegex, '');
     clean = clean.replaceAll(_htmlTagRegex, '');
-    clean = clean.replaceAll(RegExp(r'[\x00-\x1F\x7F]'), ''); // Remove control chars
+    clean = clean.replaceAll(
+      RegExp(r'[\x00-\x1F\x7F]'),
+      '',
+    ); // Remove control chars
     return clean.trim();
   }
 
@@ -158,7 +158,9 @@ class UpiValidator {
   static UpiValidationResult validate(String rawInput) {
     var raw = rawInput.trim();
     if (raw.isEmpty) {
-      return UpiValidationResult.invalid('Empty input. Please scan or enter a UPI ID.');
+      return UpiValidationResult.invalid(
+        'Empty input. Please scan or enter a UPI ID.',
+      );
     }
 
     // Strip surrounding quotes
@@ -231,7 +233,9 @@ class UpiValidator {
     }
 
     if (rawVpa == null || rawVpa.isEmpty) {
-      return UpiValidationResult.invalid('No Virtual Payment Address (VPA) found in QR.');
+      return UpiValidationResult.invalid(
+        'No Virtual Payment Address (VPA) found in QR.',
+      );
     }
 
     // 1. Validate VPA syntax & structure
@@ -247,7 +251,7 @@ class UpiValidator {
       final cleanCu = rawCurrency.trim().toUpperCase();
       if (cleanCu != 'INR') {
         return UpiValidationResult.invalid(
-          'Unsupported Currency ($cleanCu). SplitPe only processes Indian Rupee (INR) transactions.',
+          'Unsupported Currency ($cleanCu). Track Pe only supports Indian Rupee (INR) transactions.',
         );
       }
     }
@@ -293,7 +297,10 @@ class UpiValidator {
   }
 
   static String? _extractQueryParam(String raw, String param) {
-    final match = RegExp('[?&]$param=([^&]+)', caseSensitive: false).firstMatch(raw);
+    final match = RegExp(
+      '[?&]$param=([^&]+)',
+      caseSensitive: false,
+    ).firstMatch(raw);
     if (match != null) {
       return Uri.decodeComponent(match.group(1) ?? '');
     }

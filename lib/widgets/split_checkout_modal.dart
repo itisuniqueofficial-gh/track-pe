@@ -6,7 +6,7 @@ import '../models/tranche.dart';
 import '../services/upi_service.dart';
 import '../theme/app_theme.dart';
 import 'clout_share_modal.dart';
-import 'splitpe_logo.dart';
+import 'track_pe_logo.dart';
 
 class SplitCheckoutDialog extends StatefulWidget {
   final SplitOrder order;
@@ -27,10 +27,8 @@ class SplitCheckoutDialog extends StatefulWidget {
       context: context,
       barrierDismissible: true,
       barrierColor: Colors.black.withAlpha(200),
-      builder: (ctx) => SplitCheckoutDialog(
-        order: order,
-        onOrderUpdated: onOrderUpdated,
-      ),
+      builder: (ctx) =>
+          SplitCheckoutDialog(order: order, onOrderUpdated: onOrderUpdated),
     );
   }
 
@@ -45,7 +43,9 @@ class _SplitCheckoutDialogState extends State<SplitCheckoutDialog> {
   @override
   void initState() {
     super.initState();
-    _confettiController = ConfettiController(duration: const Duration(seconds: 3));
+    _confettiController = ConfettiController(
+      duration: const Duration(seconds: 3),
+    );
     final firstUnpaid = widget.order.tranches.indexWhere((t) => !t.isPaid);
     _activeStepIndex = firstUnpaid != -1 ? firstUnpaid : 0;
   }
@@ -106,7 +106,9 @@ class _SplitCheckoutDialogState extends State<SplitCheckoutDialog> {
               border: Border.all(color: AppColors.border(context), width: 1.2),
               boxShadow: [
                 BoxShadow(
-                  color: isDark ? Colors.black.withAlpha(160) : Colors.black.withAlpha(30),
+                  color: isDark
+                      ? Colors.black.withAlpha(160)
+                      : Colors.black.withAlpha(30),
                   blurRadius: 30,
                   offset: const Offset(0, 15),
                 ),
@@ -158,16 +160,21 @@ class _SplitCheckoutDialogState extends State<SplitCheckoutDialog> {
                           children: [
                             Row(
                               children: [
-                                const SplitPeLogo(size: 16, showBadge: false),
+                                const TrackPeLogo(size: 16, showBadge: false),
                                 const SizedBox(width: 8),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: AppColors.chipBg(context),
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(
-                                    isDone ? 'COMPLETED' : 'TRANCHE ${_activeStepIndex + 1} OF $totalSteps',
+                                    isDone
+                                        ? 'COMPLETED'
+                                        : 'TRANCHE ${_activeStepIndex + 1} OF $totalSteps',
                                     style: TextStyle(
                                       fontSize: 10,
                                       fontWeight: FontWeight.w700,
@@ -180,7 +187,11 @@ class _SplitCheckoutDialogState extends State<SplitCheckoutDialog> {
                             ),
                             IconButton(
                               onPressed: () => Navigator.pop(context),
-                              icon: Icon(Icons.close_rounded, color: AppColors.textSub(context), size: 20),
+                              icon: Icon(
+                                Icons.close_rounded,
+                                color: AppColors.textSub(context),
+                                size: 20,
+                              ),
                               padding: EdgeInsets.zero,
                               constraints: const BoxConstraints(),
                             ),
@@ -205,13 +216,19 @@ class _SplitCheckoutDialogState extends State<SplitCheckoutDialog> {
                                   },
                                   child: Container(
                                     height: 3.5,
-                                    margin: EdgeInsets.only(right: index == totalSteps - 1 ? 0 : 5),
+                                    margin: EdgeInsets.only(
+                                      right: index == totalSteps - 1 ? 0 : 5,
+                                    ),
                                     decoration: BoxDecoration(
                                       color: isPaid
                                           ? AppColors.primaryBlue
                                           : isCurrent
-                                              ? (isDark ? Colors.white : AppColors.primaryBlue)
-                                              : (isDark ? const Color(0xFF2E2E34) : const Color(0xFFE2E8F0)),
+                                          ? (isDark
+                                                ? Colors.white
+                                                : AppColors.primaryBlue)
+                                          : (isDark
+                                                ? const Color(0xFF2E2E34)
+                                                : const Color(0xFFE2E8F0)),
                                       borderRadius: BorderRadius.circular(2),
                                     ),
                                   ),
@@ -254,7 +271,9 @@ class _SplitCheckoutDialogState extends State<SplitCheckoutDialog> {
                               borderRadius: BorderRadius.circular(16),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withAlpha(isDark ? 80 : 25),
+                                  color: Colors.black.withAlpha(
+                                    isDark ? 80 : 25,
+                                  ),
                                   blurRadius: 16,
                                   offset: const Offset(0, 6),
                                 ),
@@ -267,8 +286,14 @@ class _SplitCheckoutDialogState extends State<SplitCheckoutDialog> {
                                 version: QrVersions.auto,
                                 size: 145.0,
                                 backgroundColor: Colors.white,
-                                eyeStyle: const QrEyeStyle(eyeShape: QrEyeShape.square, color: Colors.black),
-                                dataModuleStyle: const QrDataModuleStyle(dataModuleShape: QrDataModuleShape.square, color: Colors.black),
+                                eyeStyle: const QrEyeStyle(
+                                  eyeShape: QrEyeShape.square,
+                                  color: Colors.black,
+                                ),
+                                dataModuleStyle: const QrDataModuleStyle(
+                                  dataModuleShape: QrDataModuleShape.square,
+                                  color: Colors.black,
+                                ),
                               ),
                             ),
                           ),
@@ -304,14 +329,25 @@ class _SplitCheckoutDialogState extends State<SplitCheckoutDialog> {
                               height: 48,
                               child: ElevatedButton(
                                 onPressed: () async {
-                                  final launched = await UpiService.launchUpiIntent(currentTranche.upiUri);
+                                  final launched =
+                                      await UpiService.launchUpiIntent(
+                                        currentTranche.upiUri,
+                                      );
                                   if (!launched) {
-                                    await UpiService.copyToClipboard(currentTranche.upiUri);
+                                    await UpiService.copyToClipboard(
+                                      currentTranche.upiUri,
+                                    );
                                     if (context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
                                         SnackBar(
-                                          content: const Text('⚡ Copied UPI Link to Clipboard!'),
-                                          backgroundColor: isDark ? const Color(0xFF1E1E22) : Colors.black87,
+                                          content: const Text(
+                                            '⚡ Copied UPI Link to Clipboard!',
+                                          ),
+                                          backgroundColor: isDark
+                                              ? const Color(0xFF1E1E22)
+                                              : Colors.black87,
                                           duration: const Duration(seconds: 2),
                                         ),
                                       );
@@ -352,14 +388,22 @@ class _SplitCheckoutDialogState extends State<SplitCheckoutDialog> {
                               width: double.infinity,
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               decoration: BoxDecoration(
-                                color: isDark ? AppColors.blueSurface : const Color(0xFFE8F0FE),
+                                color: isDark
+                                    ? AppColors.blueSurface
+                                    : const Color(0xFFE8F0FE),
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: AppColors.primaryBlue.withAlpha(80)),
+                                border: Border.all(
+                                  color: AppColors.primaryBlue.withAlpha(80),
+                                ),
                               ),
                               child: const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(Icons.check_circle_rounded, color: AppColors.primaryBlue, size: 16),
+                                  Icon(
+                                    Icons.check_circle_rounded,
+                                    color: AppColors.primaryBlue,
+                                    size: 16,
+                                  ),
                                   SizedBox(width: 6),
                                   Text(
                                     'Tranche Paid',
@@ -399,8 +443,13 @@ class _SplitCheckoutDialogState extends State<SplitCheckoutDialog> {
                             height: 68,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: isDark ? AppColors.blueSurface : const Color(0xFFE8F0FE),
-                              border: Border.all(color: AppColors.primaryBlue, width: 2),
+                              color: isDark
+                                  ? AppColors.blueSurface
+                                  : const Color(0xFFE8F0FE),
+                              border: Border.all(
+                                color: AppColors.primaryBlue,
+                                width: 2,
+                              ),
                             ),
                             child: const Icon(
                               Icons.verified_rounded,
@@ -446,7 +495,10 @@ class _SplitCheckoutDialogState extends State<SplitCheckoutDialog> {
                               ),
                               child: const Text(
                                 'Share Zero-MDR Receipt',
-                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
                             ),
                           ),
@@ -455,7 +507,11 @@ class _SplitCheckoutDialogState extends State<SplitCheckoutDialog> {
                             onPressed: () => Navigator.pop(context),
                             child: Text(
                               'Done',
-                              style: TextStyle(color: AppColors.textSub(context), fontSize: 13, fontWeight: FontWeight.w600),
+                              style: TextStyle(
+                                color: AppColors.textSub(context),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ],

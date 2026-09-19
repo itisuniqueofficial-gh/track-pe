@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:splitpe/services/upi_validator.dart';
+import 'package:track_pe/services/upi_validator.dart';
 
 void main() {
   group('UpiValidator - Valid Standard URIs & VPAs', () {
@@ -21,14 +21,16 @@ void main() {
       expect(result.errorMessage, isNull);
     });
 
-    test('Validates standalone plain VPA string', () {
-      const raw = 'technoaman@okaxis';
+    test('Validates standalone plain VPA string (demo VPA)', () {
+      const raw = 'jaydatt@pingpay';
       final result = UpiValidator.validate(raw);
 
       expect(result.isValid, isTrue);
-      expect(result.vpa, 'technoaman@okaxis');
-      expect(result.issuingApp, 'Google Pay');
-      expect(result.issuingBank, 'Axis Bank');
+      expect(result.vpa, 'jaydatt@pingpay');
+      // "pingpay" is not in the curated PSP registry: the validator accepts it
+      // via the universal fallback with no issuer metadata.
+      expect(result.issuingApp, isNull);
+      expect(result.issuingBank, isNull);
     });
 
     test('Validates phone-number based VPAs', () {
@@ -69,18 +71,23 @@ void main() {
       expect(whatsapp.issuingApp, 'WhatsApp Pay');
     });
 
-    test('Accepts valid future/unlisted handles gracefully via universal regex', () {
-      final unlisted = UpiValidator.validate('vendor@futuristicbank');
-      expect(unlisted.isValid, isTrue);
-      expect(unlisted.vpa, 'vendor@futuristicbank');
-      expect(unlisted.issuingApp, isNull);
-      expect(unlisted.issuingBank, isNull);
-    });
+    test(
+      'Accepts valid future/unlisted handles gracefully via universal regex',
+      () {
+        final unlisted = UpiValidator.validate('vendor@futuristicbank');
+        expect(unlisted.isValid, isTrue);
+        expect(unlisted.vpa, 'vendor@futuristicbank');
+        expect(unlisted.issuingApp, isNull);
+        expect(unlisted.issuingBank, isNull);
+      },
+    );
   });
 
   group('UpiValidator - Security, Injection & Malformed Attacks', () {
     test('Rejects arbitrary non-UPI phishing URLs', () {
-      final phishing = UpiValidator.validate('https://malicious-login-phishing.com/account');
+      final phishing = UpiValidator.validate(
+        'https://malicious-login-phishing.com/account',
+      );
       expect(phishing.isValid, isFalse);
       expect(phishing.errorMessage, contains('Invalid'));
     });

@@ -24,10 +24,15 @@ class AppColors {
 
   // Google Play & GPay Electric Blue Palette
   static const Color primaryBlue = Color(0xFF0084FF); // Electric Google Blue
-  static const Color primaryBlueDark = Color(0xFF1A73E8); // Classic Google Material Blue
-  static const Color primaryGreen = primaryBlue; // Seamless alias for whole-app blue theme
+  static const Color primaryBlueDark = Color(
+    0xFF1A73E8,
+  ); // Classic Google Material Blue
+  static const Color primaryGreen =
+      primaryBlue; // Seamless alias for whole-app blue theme
   static const Color greenDark = primaryBlueDark;
-  static const Color blueSurface = Color(0xFF0E1E38); // Midnight blue container tint
+  static const Color blueSurface = Color(
+    0xFF0E1E38,
+  ); // Midnight blue container tint
   static const Color neonCyan = Color(0xFF00E5FF);
   static const Color electricPurple = Color(0xFF7C4DFF);
   static const Color goldenYellow = Color(0xFFFFD600);
@@ -42,43 +47,42 @@ class AppColors {
   // Context-aware dynamic color getters
   static Color bg(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark
-          ? background
-          : lightBackground;
+      ? background
+      : lightBackground;
 
   static Color cardBg(BuildContext context) =>
-      Theme.of(context).brightness == Brightness.dark
-          ? surface
-          : lightSurface;
+      Theme.of(context).brightness == Brightness.dark ? surface : lightSurface;
 
   static Color cardElevated(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark
-          ? surfaceElevated
-          : lightSurfaceElevated;
+      ? surfaceElevated
+      : lightSurfaceElevated;
 
   static Color border(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark
-          ? neoBorder
-          : lightNeoBorder;
+      ? neoBorder
+      : lightNeoBorder;
 
   static Color text(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark
-          ? textPrimary
-          : lightTextPrimary;
+      ? textPrimary
+      : lightTextPrimary;
 
   static Color textSub(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark
-          ? textSecondary
-          : lightTextSecondary;
+      ? textSecondary
+      : lightTextSecondary;
 
   static Color chipBg(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark
-          ? blueSurface
-          : lightBlueSurface;
+      ? blueSurface
+      : lightBlueSurface;
 }
 
 class ThemeController {
-  static final ValueNotifier<ThemeMode> themeMode =
-      ValueNotifier<ThemeMode>(ThemeMode.dark);
+  static final ValueNotifier<ThemeMode> themeMode = ValueNotifier<ThemeMode>(
+    ThemeMode.dark,
+  );
 
   static bool isDark(BuildContext context) {
     if (themeMode.value == ThemeMode.system) {
@@ -88,8 +92,9 @@ class ThemeController {
   }
 
   static void toggleTheme() {
-    themeMode.value =
-        themeMode.value == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+    themeMode.value = themeMode.value == ThemeMode.dark
+        ? ThemeMode.light
+        : ThemeMode.dark;
   }
 }
 
@@ -105,10 +110,11 @@ class AppTheme {
         surface: AppColors.surface,
         error: AppColors.alertRed,
       ),
-      textTheme: GoogleFonts.spaceGroteskTextTheme(ThemeData.dark().textTheme).apply(
-        bodyColor: AppColors.textPrimary,
-        displayColor: AppColors.textPrimary,
-      ),
+      textTheme: GoogleFonts.spaceGroteskTextTheme(ThemeData.dark().textTheme)
+          .apply(
+            bodyColor: AppColors.textPrimary,
+            displayColor: AppColors.textPrimary,
+          ),
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.background,
         elevation: 0,
@@ -134,10 +140,11 @@ class AppTheme {
         surface: AppColors.lightSurface,
         error: AppColors.alertRed,
       ),
-      textTheme: GoogleFonts.spaceGroteskTextTheme(ThemeData.light().textTheme).apply(
-        bodyColor: AppColors.lightTextPrimary,
-        displayColor: AppColors.lightTextPrimary,
-      ),
+      textTheme: GoogleFonts.spaceGroteskTextTheme(ThemeData.light().textTheme)
+          .apply(
+            bodyColor: AppColors.lightTextPrimary,
+            displayColor: AppColors.lightTextPrimary,
+          ),
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.lightBackground,
         elevation: 0,

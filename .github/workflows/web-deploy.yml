@@ -1,21 +1,21 @@
-name: Deploy SplitPe Web to GitHub Pages
+name: Web Deploy (GitHub Pages)
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Allow one concurrent deployment
 concurrency:
-  group: "pages"
+  group: pages
   cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: "3.47.4"
 
 jobs:
   build-and-deploy:
@@ -23,28 +23,24 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
           cache: true
 
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build Web
-        run: flutter build web --release --base-href "/SplitPe/"
+      - name: Build web
+        # Served from the root of the custom domain
+        # (https://track-pe.itisuniqueofficial.com/), so base-href is "/".
+        run: flutter build web --release --base-href "/"
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -52,7 +48,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'build/web'
+          path: build/web
 
       - name: Deploy to GitHub Pages
         id: deployment
