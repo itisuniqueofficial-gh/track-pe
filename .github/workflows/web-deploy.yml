@@ -42,6 +42,12 @@ jobs:
         # (https://track-pe.itisuniqueofficial.com/), so base-href is "/".
         run: flutter build web --release --base-href "/"
 
+      - name: Add SPA fallback for clean-path deep links
+        # GitHub Pages serves 404.html for unknown paths (e.g. /privacy on
+        # refresh). Copying index.html lets the Flutter app load and its router
+        # resolve the path client-side.
+        run: cp build/web/index.html build/web/404.html
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
         with:

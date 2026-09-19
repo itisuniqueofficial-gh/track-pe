@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'theme/app_theme.dart';
+import 'utils/url_strategy.dart';
 import 'views/home_screen.dart';
+import 'views/privacy_policy_view.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  // Enable clean path URLs on web (e.g. /privacy); no-op elsewhere.
+  configureUrlStrategy();
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -19,6 +23,23 @@ void main() {
 class TrackPeApp extends StatelessWidget {
   const TrackPeApp({super.key});
 
+  Route<dynamic> _onGenerateRoute(RouteSettings settings) {
+    switch (settings.name) {
+      case PrivacyPolicyScreen.routeName:
+        return MaterialPageRoute(
+          builder: (_) => const PrivacyPolicyScreen(),
+          settings: settings,
+        );
+      case '/':
+      default:
+        // Unknown paths fall back to the home screen.
+        return MaterialPageRoute(
+          builder: (_) => const HomeScreen(),
+          settings: const RouteSettings(name: '/'),
+        );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<ThemeMode>(
@@ -30,6 +51,8 @@ class TrackPeApp extends StatelessWidget {
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: currentMode,
+          initialRoute: '/',
+          onGenerateRoute: _onGenerateRoute,
           builder: (context, child) {
             final isDark = ThemeController.isDark(context);
             return Container(
@@ -53,7 +76,6 @@ class TrackPeApp extends StatelessWidget {
               ),
             );
           },
-          home: const HomeScreen(),
         );
       },
     );

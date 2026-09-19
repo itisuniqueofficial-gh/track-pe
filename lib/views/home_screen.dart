@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../theme/app_theme.dart';
 import '../widgets/track_pe_logo.dart';
 import 'group_split_view.dart';
 import 'pos_checkout_view.dart';
+import 'privacy_policy_view.dart';
 import 'savings_calculator_view.dart';
 import 'qr_scanner_view.dart';
 
@@ -156,6 +158,30 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _dialogLink(String label, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w800,
+          color: AppColors.primaryBlue,
+          decoration: TextDecoration.underline,
+          decorationColor: AppColors.primaryBlue,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openUrl(String url) async {
+    try {
+      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+    } catch (_) {
+      // Ignore; dialog remains usable if no handler is available.
+    }
+  }
+
   void _showAboutMdrDialog(BuildContext context) {
     final isDark = ThemeController.isDark(context);
     showDialog(
@@ -257,6 +283,23 @@ class _HomeScreenState extends State<HomeScreen> {
                   height: 1.4,
                   color: AppColors.textSub(context),
                 ),
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 14,
+                runSpacing: 6,
+                children: [
+                  _dialogLink('Privacy Policy', () {
+                    Navigator.pop(ctx);
+                    Navigator.pushNamed(context, PrivacyPolicyScreen.routeName);
+                  }),
+                  _dialogLink('Website', () {
+                    _openUrl('https://track-pe.itisuniqueofficial.com/');
+                  }),
+                  _dialogLink('Contact', () {
+                    _openUrl('mailto:track-pe@itisuniqueofficial.com');
+                  }),
+                ],
               ),
               const SizedBox(height: 18),
               SizedBox(

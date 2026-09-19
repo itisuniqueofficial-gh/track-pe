@@ -26,4 +26,17 @@ void main() {
     expect(find.text('Group Split'), findsOneWidget);
     expect(find.text('MDR Roast'), findsOneWidget);
   });
+
+  testWidgets('/privacy route renders the Privacy Policy page', (tester) async {
+    await tester.pumpWidget(const TrackPeApp());
+    await tester.pump();
+
+    final nav = tester.state<NavigatorState>(find.byType(Navigator).first);
+    nav.pushNamed('/privacy');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Privacy Policy'), findsOneWidget);
+    expect(find.text('Last Updated: September 2026'), findsOneWidget);
+    expect(find.text('Contact'), findsWidgets);
+  });
 }
