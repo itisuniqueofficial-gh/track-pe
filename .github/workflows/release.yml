@@ -39,13 +39,9 @@ jobs:
   release:
     name: Version, build, sign & publish
     runs-on: ubuntu-latest
+    # Skip when a push commit contains [skip release]; always run for manual dispatch.
+    if: ${{ github.event_name != 'push' || !contains(github.event.head_commit.message, '[skip release]') }}
     steps:
-      - name: Skip if commit requests it
-        if: github.event_name == 'push' && contains(github.event.head_commit.message, '[skip release]')
-        run: |
-          echo "Commit requested [skip release]; exiting."
-          exit 0
-
       - name: Checkout (full history for versioning)
         uses: actions/checkout@v4
         with:
