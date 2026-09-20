@@ -132,7 +132,8 @@ void main() {
         amountPaise: 199900,
         note: 'Bill 1/2',
       );
-      expect(uri.contains('pa=store%40okhdfcbank'), isTrue);
+      expect(uri.contains('pa=store@okhdfcbank'), isTrue);
+      expect(uri.contains('%40'), isFalse);
       expect(uri.contains('am=1999.00'), isTrue);
       expect(uri.contains('cu=INR'), isTrue);
     });

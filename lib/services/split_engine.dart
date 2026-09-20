@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 import '../models/split_order.dart';
 import '../models/tranche.dart';
@@ -233,10 +234,46 @@ class SplitEngine {
     }
 
     final query = params.entries
-        .map((e) => '${e.key}=${Uri.encodeComponent(e.value)}')
+        .map((e) => '${e.key}=${_encodeUpiValue(e.value)}')
         .join('&');
 
     return 'upi://pay?$query';
+  }
+
+  /// Percent-encodes a single UPI query-parameter **value** exactly once.
+  ///
+  /// UPI apps read parameters like `pa` (the VPA) literally and frequently do
+  /// NOT percent-decode them. Encoding the VPA separator `@` as `%40` (which
+  /// [Uri.encodeComponent] and `Uri(queryParameters:)` both do) causes some
+  /// apps to treat the address as e.g. `jaydatt%40pingpay` — a broken payee.
+  ///
+  /// Per RFC 3986, `@` is allowed unencoded in the query component, so we keep
+  /// it literal. Everything outside the unreserved set (`A-Z a-z 0-9 - . _ ~`)
+  /// plus `@` is percent-encoded from its UTF-8 bytes. Spaces therefore become
+  /// `%20` (never `+`, which some UPI apps render literally), and `&`, `=`,
+  /// `#`, `%`, and Unicode are encoded correctly. This runs once at
+  /// serialization time; do not pre-encode values before calling this.
+  static String _encodeUpiValue(String value) {
+    final bytes = utf8.encode(value);
+    final sb = StringBuffer();
+    for (final b in bytes) {
+      final isUnreserved =
+          (b >= 0x30 && b <= 0x39) || // 0-9
+          (b >= 0x41 && b <= 0x5A) || // A-Z
+          (b >= 0x61 && b <= 0x7A) || // a-z
+          b == 0x2D || // -
+          b == 0x2E || // .
+          b == 0x5F || // _
+          b == 0x7E; // ~
+      if (isUnreserved || b == 0x40) {
+        // Unreserved characters and the VPA separator '@' stay literal.
+        sb.writeCharCode(b);
+      } else {
+        sb.write('%');
+        sb.write(b.toRadixString(16).toUpperCase().padLeft(2, '0'));
+      }
+    }
+    return sb.toString();
   }
 
   /// Parses and validates a raw scanned UPI QR string using [UpiValidator].

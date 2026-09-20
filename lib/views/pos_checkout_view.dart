@@ -73,7 +73,9 @@ class PosCheckoutViewState extends State<PosCheckoutView> {
 
     setState(() {
       if (vpa.isNotEmpty) _vpaController.text = vpa;
-      if (name.isNotEmpty) _nameController.text = Uri.decodeComponent(name);
+      // The validator already decodes and sanitizes `pn`; store it as-is.
+      // (Re-decoding here would crash on names containing a literal '%'.)
+      if (name.isNotEmpty) _nameController.text = name;
       if (am.isNotEmpty &&
           double.tryParse(am) != null &&
           double.parse(am) > 0) {
